@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KUNAL — Daily Focus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000; --near-black:#0B0B0B; --surface:#121212; --surface-2:#181818;
+    --white:#FFFFFF; --off-white:#F5F5F5; --grey:#8C8C8C; --grey-dim:#5A5A5A; --line:#2A2A2A;
+    --gold:#D4AF37; --gold-light:#E5C76B; --gold-dark:#9C7A19; --gold-muted:#B89B45;
+    --green:#4CAF6D; --red:#C0463A;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--black); }
+  body{ font-family:var(--font); color:var(--off-white); min-height:100vh; -webkit-font-smoothing:antialiased; }
+  #app{ max-width:520px; margin:0 auto; padding:20px 16px 70px; }
+
+  .brand{ text-align:center; font-size:12px; letter-spacing:3px; color:var(--gold-muted); font-weight:700; margin-bottom:18px; }
+  .hero-greet{ font-size:26px; font-weight:800; color:var(--white); margin:0; }
+  .hero-date{ font-size:13px; color:var(--grey); margin-top:2px; margin-bottom:2px; }
+  .hero-sub{ font-size:11px; color:var(--grey-dim); margin-bottom:18px; }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:14px; }
+  .card.gold-edge{ border-color:var(--gold-dark); }
+  .eyebrow{ font-size:11px; letter-spacing:1.5px; color:var(--gold-muted); font-weight:700; text-transform:uppercase; margin-bottom:8px; }
+  .h2{ font-size:15px; font-weight:700; color:var(--white); margin:0 0 4px; }
+  .h3{ font-size:20px; font-weight:800; color:var(--white); margin:2px 0 10px; line-height:1.3; }
+  .body-text{ font-size:14px; color:var(--off-white); line-height:1.55; }
+  .small{ font-size:12px; color:var(--grey); }
+  .tiny{ font-size:11px; color:var(--grey-dim); }
+
+  input[type=text], input[type=number], textarea, select{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--off-white);
+    border-radius:8px; padding:10px 12px; font-family:var(--font); font-size:14px; width:100%;
+  }
+  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--gold); }
+  textarea{ resize:vertical; }
+
+  button{ font-family:var(--font); cursor:pointer; border-radius:9px; font-size:13.5px; font-weight:600; border:1px solid var(--line); }
+  .btn-primary{ background:var(--gold); color:var(--black); border:none; padding:13px; font-weight:800; letter-spacing:.2px; }
+  .btn-outline{ background:transparent; border:1px solid var(--gold-dark); color:var(--gold-light); padding:9px 12px; }
+  .btn-dark{ background:var(--surface-2); color:var(--off-white); border:1px solid var(--line); padding:9px 12px; }
+  .btn-dark:hover, .btn-outline:hover{ border-color:var(--gold); }
+  .btn-block{ width:100%; }
+
+  .progress-track{ background:var(--surface-2); border-radius:6px; height:6px; overflow:hidden; margin-top:8px; }
+  .progress-fill{ background:linear-gradient(90deg,var(--gold-dark),var(--gold)); height:100%; border-radius:6px; transition:width .3s; }
+
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+  .quick-actions{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
+  .quick-actions button{ display:flex; flex-direction:column; align-items:center; gap:5px; padding:12px 4px; background:var(--surface); border:1px solid var(--line); color:var(--off-white); font-size:10.5px; font-weight:600; }
+  .quick-actions button:hover{ border-color:var(--gold); color:var(--gold-light); }
+  .qa-icon{ font-size:17px; }
+
+  .mode-lane{ display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:1px; padding:4px 10px; border-radius:20px; border:1px solid var(--gold-dark); color:var(--gold-light); margin-bottom:10px; }
+
+  .timeline-item{ display:flex; gap:12px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .timeline-item:last-child{ border-bottom:none; }
+  .timeline-mark{ width:20px; flex-shrink:0; text-align:center; font-size:13px; padding-top:1px; }
+  .timeline-time{ font-size:11px; color:var(--grey); font-family:monospace; min-width:78px; }
+  .timeline-label{ font-size:13.5px; color:var(--off-white); }
+  .timeline-item.active .timeline-label{ color:var(--gold-light); font-weight:700; }
+  .timeline-item.active{ background:rgba(212,175,55,0.06); border-radius:6px; margin:0 -8px; padding:9px 8px; }
+  .timeline-item.done .timeline-label{ color:var(--grey); }
+
+  .habit-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px; }
+  .habit-card.hit{ border-color:var(--green); }
+  .habit-name{ font-size:11px; font-weight:800; letter-spacing:.6px; color:var(--gold-muted); text-transform:uppercase; }
+  .habit-value{ font-size:17px; font-weight:800; color:var(--white); margin-top:4px; font-family:monospace; }
+  .habit-target{ font-size:10.5px; color:var(--grey-dim); }
+  .habit-check{ margin-top:6px; font-size:11px; }
+  .habit-check.yes{ color:var(--green); font-weight:700; }
+  .habit-check.no{ color:var(--grey-dim); }
+  .habit-inline-input{ width:60px !important; padding:5px 6px !important; font-size:13px !important; display:inline-block; }
+
+  .score-ring-wrap{ text-align:center; }
+  .score-number{ font-size:44px; font-weight:800; color:var(--gold); font-family:monospace; line-height:1; }
+  .score-label{ font-size:12px; color:var(--grey); letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+  .score-verdict{ font-size:13px; color:var(--gold-light); font-weight:700; margin-top:6px; }
+  .score-cat-row{ display:flex; justify-content:space-between; align-items:center; padding:7px 0; }
+  .score-cat-name{ font-size:13px; color:var(--off-white); width:90px; }
+  .score-cat-bar{ flex:1; height:5px; background:var(--surface-2); border-radius:5px; margin:0 10px; overflow:hidden; }
+  .score-cat-fill{ height:100%; background:var(--gold); border-radius:5px; }
+  .score-cat-pct{ font-size:12px; color:var(--grey); font-family:monospace; width:38px; text-align:right; }
+
+  .streak-badge{ display:inline-block; font-size:9.5px; font-weight:700; color:var(--gold-light); background:rgba(212,175,55,0.1); border:1px solid var(--gold-dark); border-radius:10px; padding:1px 7px; margin-top:5px; }
+  .goal-row{ margin-bottom:12px; }
+  .goal-row label{ display:block; font-size:10.5px; letter-spacing:.5px; text-transform:uppercase; color:var(--gold-muted); font-weight:700; margin-bottom:5px; }
+  .sparkline{ display:flex; align-items:flex-end; gap:3px; height:56px; margin-top:10px; }
+  .spark-bar{ flex:1; background:var(--surface-2); border-radius:3px 3px 0 0; position:relative; min-height:3px; }
+  .spark-bar.hi{ background:var(--gold); }
+  .spark-bar.mid{ background:var(--gold-dark); }
+  .insight-line{ display:flex; gap:8px; margin-bottom:10px; font-size:13px; line-height:1.5; }
+  .insight-dot{ color:var(--gold); flex-shrink:0; }
+  .mvd-item{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:13.5px; cursor:pointer; }
+  .mvd-item:last-child{ border-bottom:none; }
+  .mvd-check{ width:18px; height:18px; border-radius:5px; border:1px solid var(--gold-dark); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold); }
+  .mvd-check.on{ background:var(--gold); color:var(--black); }
+  .freeze-countdown{ font-size:28px; font-weight:800; color:var(--gold); font-family:monospace; }
+  .list-item{ background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:13px; }
+  .list-item .meta{ font-size:10.5px; color:var(--grey-dim); margin-top:3px; }
+  .empty-state{ text-align:center; padding:20px 10px; color:var(--grey); font-size:13px; }
+  .empty-state .big{ color:var(--off-white); font-weight:700; margin-bottom:4px; display:block; }
+
+  .overlay{ position:fixed; inset:0; background:var(--black); z-index:100; display:none; flex-direction:column; padding:24px 20px; overflow-y:auto; }
+  .overlay.open{ display:flex; }
+  .overlay-close{ align-self:flex-end; background:none; border:none; color:var(--grey); font-size:22px; padding:4px 8px; }
+  .focus-center{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .focus-timer{ font-size:64px; font-weight:800; color:var(--gold); font-family:monospace; margin:20px 0; }
+  .focus-task{ font-size:20px; font-weight:700; color:var(--white); max-width:340px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; color:var(--grey); margin-bottom:5px; font-weight:600; }
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .chip{ padding:7px 12px; border-radius:20px; border:1px solid var(--line); background:var(--surface-2); color:var(--off-white); font-size:12.5px; cursor:pointer; }
+  .chip.selected{ border-color:var(--gold); color:var(--gold-light); background:rgba(212,175,55,0.08); }
+
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--gold); color:var(--black); padding:11px 20px; border-radius:30px; font-size:13px; font-weight:700; z-index:200; display:none; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+
+  .thought-text{ font-size:15px; color:var(--off-white); line-height:1.6; font-style:italic; }
+  .coach-note{ font-size:13px; color:var(--gold-light); margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+  .notice{display:none; background:#33290d; border:1px solid var(--gold-dark); color:var(--gold-light); border-radius:10px; padding:12px; margin-bottom:14px; font-size:13px; line-height:1.45;}
+  .notice.show{display:block}.notice button{margin-top:9px}.status{font-size:10px; font-weight:800; letter-spacing:.7px; color:var(--grey); text-transform:uppercase}.status.completed{color:var(--green)}.status.missed{color:var(--red)}.status.active{color:var(--gold-light)}
+  .timeline-actions{margin-left:auto;display:flex;gap:5px;align-items:center}.mini-btn{background:var(--surface-2);color:var(--off-white);border:1px solid var(--line);padding:4px 7px;border-radius:6px;font-size:10px}.mini-btn:focus,.chip:focus,button:focus,input:focus,textarea:focus,select:focus{outline:2px solid var(--gold-light);outline-offset:2px}
+  .chip{font-family:var(--font)}.tool-summary{cursor:pointer;list-style:none}.tool-summary::-webkit-details-marker{display:none}.tool-summary:after{content:'Show';float:right;color:var(--grey-dim);font-size:11px}.secondary-tools[open] .tool-summary:after{content:'Hide'}
+  .data-row{display:grid;grid-template-columns:1.1fr .9fr .9fr auto;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px}.data-row:last-child{border-bottom:0}.data-meta{font-size:10px;color:var(--grey-dim);margin-top:2px}.compact-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.compact-form .wide{grid-column:1/-1}.section-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  @media (max-width:360px){#app{padding:16px 12px 56px}.quick-actions{gap:5px}.quick-actions button{font-size:9.5px;padding:10px 2px}.card{padding:14px}.grid3{gap:6px}.data-row{grid-template-columns:1fr auto}.data-row .data-meta{grid-column:1/-1}}
+  @media (min-width:521px){#app{padding-top:28px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="notice" id="data-notice" role="status"></div>
+  <div class="brand">TKS &middot; KUNAL DAILY FOCUS</div>
+
+  <div id="hero-greet" class="hero-greet">Good Morning, Kunal</div>
+  <div id="hero-date" class="hero-date">--</div>
+  <div id="hero-sub" class="hero-sub">--</div>
+
+  <!-- GOAL HIERARCHY -->
+  <div class="card">
+    <div class="row" style="cursor:pointer;" id="goals-toggle">
+      <div class="eyebrow" style="margin-bottom:0;">Goal Hierarchy</div>
+      <span class="tiny" id="goals-chevron">show</span>
+    </div>
+    <div id="goals-body" style="display:none; margin-top:12px;">
+      <div class="goal-row"><label>90-Day Goal</label><input type="text" id="goal-90" placeholder="e.g. Rs 3,00,000 in 90 days"></div>
+      <div class="goal-row"><label>This Month</label><input type="text" id="goal-month" placeholder="This month's target"></div>
+      <div class="goal-row" style="margin-bottom:4px;"><label>This Week</label><input type="text" id="goal-week" placeholder="This week's target"></div>
+      <button class="btn-outline btn-block" id="goals-save">Save goals</button>
+    </div>
+    <div id="goals-summary" class="tiny" style="margin-top:6px;">--</div>
+  </div>
+
+  <!-- IDENTITY STATEMENT -->
+  <div class="card">
+    <div class="eyebrow">Identity</div>
+    <input type="text" id="identity-input" placeholder="I am becoming someone who...">
+    <div class="row" style="margin-top:10px;">
+      <span class="tiny" id="identity-saved-note"></span>
+      <button class="btn-outline" id="identity-save">Save</button>
+    </div>
+  </div>
+
+  <!-- ONE THING -->
+  <div class="card gold-edge">
+    <div class="eyebrow">Daily Focus</div>
+    <div class="body-text" style="margin-bottom:10px; color:var(--grey);">What is the ONE thing that will make today successful?</div>
+    <input type="text" id="priority-input" placeholder="e.g. Publish today's AI video">
+    <div class="row" style="margin-top:12px;">
+      <div class="small">Today's Progress — <span id="progress-pct">0</span>%</div>
+      <button class="btn-outline" id="priority-save">Set priority</button>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width:0%;"></div></div>
+  </div>
+
+  <!-- DAILY THOUGHT -->
+  <div class="card">
+    <div class="eyebrow">Today's Thought</div>
+    <div class="thought-text" id="thought-text">--</div>
+    <div class="coach-note" id="coach-note">--</div>
+  </div>
+
+  <!-- CURRENT MODE -->
+  <div class="card gold-edge">
+    <div class="eyebrow">Current Mode</div>
+    <span class="mode-lane" id="mode-lane">LIFE</span>
+    <div id="mode-time" class="small" style="margin-bottom:6px;">--</div>
+    <div class="h3" id="mode-task" style="margin:2px 0 8px;">--</div>
+    <div class="small" style="color:var(--gold-light); font-weight:600;">Don't switch lanes.</div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="quick-actions">
+    <button id="qa-park"><span class="qa-icon">&#128161;</span>Park Idea</button>
+    <button id="qa-distract"><span class="qa-icon">&#9888;&#65039;</span>Distracted</button>
+    <button id="qa-focus"><span class="qa-icon">&#9201;&#65039;</span>Focus Mode</button>
+    <button id="qa-review"><span class="qa-icon">&#127769;</span>Daily Review</button>
+  </div>
+
+  <div class="card gold-edge" id="low-energy-card">
+    <div class="row"><div><div class="eyebrow" style="margin-bottom:3px;">Low Energy Day</div><div class="small" id="low-energy-copy">Use minimum targets to protect consistency.</div></div><button class="btn-outline" id="low-energy-toggle" type="button">Activate</button></div>
+  </div>
+
+  <details class="secondary-tools">
+    <summary class="tool-summary eyebrow">Today's tracking & planning</summary>
+  <!-- ROUTINE TIMELINE -->
+  <div class="card">
+    <div class="eyebrow">Today's Routine</div>
+    <div id="routine-list"></div>
+  </div>
+
+  <!-- HABIT CARDS -->
+  <div class="card">
+    <div class="eyebrow">Habits</div>
+    <div class="grid2" id="habit-grid" style="margin-top:2px;"></div>
+  </div>
+
+  <!-- EXECUTION SCORE -->
+  <div class="card">
+    <div class="eyebrow" style="text-align:center;">Execution Score</div>
+    <div class="score-ring-wrap">
+      <div class="score-number" id="score-number">0</div>
+      <div class="score-label">Today</div>
+      <div class="score-verdict" id="score-verdict">--</div>
+    </div>
+    <div style="margin-top:16px;" id="score-breakdown"></div>
+    <div class="eyebrow" style="margin-top:18px;">Last 14 Days</div>
+    <div class="sparkline" id="score-sparkline"></div>
+  </div>
+
+  <!-- MINIMUM VIABLE DAY -->
+  <div class="card" id="mvd-card">
+    <div class="eyebrow">Minimum Viable Day</div>
+    <div class="tiny" style="margin-bottom:6px;">Even on your worst day, protect these three.</div>
+    <div id="mvd-list"></div>
+    <div class="tiny" id="mvd-status" style="margin-top:10px; color:var(--gold-light); font-weight:600;"></div>
+  </div>
+
+  <!-- STRATEGY FREEZE -->
+  <div class="card" id="strategy-card">
+    <div class="eyebrow">Strategy Freeze</div>
+    <div id="strategy-active" style="display:none;">
+      <div class="body-text" id="strategy-text-display" style="margin-bottom:8px;"></div>
+      <div class="row">
+        <div><div class="freeze-countdown" id="strategy-days-left">--</div><div class="tiny">days left frozen</div></div>
+        <button class="btn-dark" id="strategy-change">Change strategy</button>
+      </div>
+    </div>
+    <div id="strategy-setup">
+      <textarea id="strategy-input" rows="2" placeholder="What's your current approach/script/format? (e.g. cold-call script v2, reels-only content)"></textarea>
+      <div class="row" style="margin-top:10px;">
+        <select id="strategy-days">
+          <option value="7">Freeze 7 days</option>
+          <option value="14" selected>Freeze 14 days</option>
+          <option value="21">Freeze 21 days</option>
+          <option value="30">Freeze 30 days</option>
+        </select>
+        <button class="btn-primary" id="strategy-save">Freeze it</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Leads — simple pipeline</div>
+    <div class="grid3" id="lead-stats" style="margin-bottom:10px;"></div>
+    <div id="lead-list"></div>
+    <button class="btn-outline btn-block" id="lead-add" type="button" style="margin-top:10px;">Add lead</button>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">Content</div><div class="small">One useful piece today — choose a stream, then move it forward.</div>
+    <div id="content-list" style="margin-top:10px;"></div>
+    <button class="btn-outline btn-block" id="content-add" type="button" style="margin-top:10px;">Add content item</button>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">📊 Daily Reporting</div><div class="small">Generated from the actions you already logged.</div>
+    <div class="section-actions"><button class="btn-dark" id="report-today" type="button">View today</button><button class="btn-dark" id="report-history" type="button">Previous reports</button><button class="btn-outline" id="report-export" type="button">Export report</button></div>
+  </div>
+  <!-- WEEKLY / MONTHLY INSIGHTS -->
+  <div class="card">
+    <div class="eyebrow">Coaching Insights</div>
+    <div class="grid2">
+      <button class="btn-dark" id="qa-weekly">This Week</button>
+      <button class="btn-dark" id="qa-monthly">This Month</button>
+    </div>
+  </div>
+
+  <!-- IDEAS -->
+  <div class="card">
+    <div class="row"><div class="eyebrow" style="margin-bottom:0;">Idea Parking Lot</div><span class="tiny" id="idea-count">0 parked</span></div>
+    <div id="idea-list" style="margin-top:10px;"></div>
+  </div>
+
+  <!-- DISTRACTIONS -->
+  <div class="card">
+    <div class="row"><div class="eyebrow" style="margin-bottom:0;">Distractions Today</div><span class="tiny" id="distract-count">0 logged</span></div>
+    <div id="distract-list" style="margin-top:10px;"></div>
+  </div>
+  </details>
+
+  <div style="text-align:center; margin-top:10px;">
+    <button class="btn-dark" id="export-btn" type="button" style="font-size:11px;">Backup & restore data</button>
+  </div>
+</div>
+
+<!-- IDEA OVERLAY -->
+<div class="overlay" id="overlay-idea">
+  <button class="overlay-close" data-close="overlay-idea">&times;</button>
+  <div class="eyebrow">Park Idea</div>
+  <div class="field"><label>Idea</label><textarea id="idea-text" rows="3" placeholder="Write the idea, then get back to work"></textarea></div>
+  <div class="field"><label>Category</label>
+    <div class="chip-row" id="idea-cat-chips">
+      <button type="button" class="chip" data-cat="AI">AI</button><button type="button" class="chip" data-cat="Content">Content</button>
+      <button type="button" class="chip" data-cat="Business">Business</button><button type="button" class="chip" data-cat="Career">Career</button>
+      <button type="button" class="chip" data-cat="Health">Health</button><button type="button" class="chip" data-cat="Learning">Learning</button>
+      <button type="button" class="chip" data-cat="Other">Other</button>
+    </div>
+  </div>
+  <div class="field"><label>Priority</label>
+    <div class="chip-row" id="idea-pri-chips">
+      <button type="button" class="chip" data-pri="Low">Low</button><button type="button" class="chip" data-pri="Medium">Medium</button><button type="button" class="chip" data-pri="High">High</button>
+    </div>
+  </div>
+  <button class="btn-primary btn-block" id="idea-save">Park it</button>
+</div>
+
+<!-- DISTRACTION OVERLAY -->
+<div class="overlay" id="overlay-distract">
+  <button class="overlay-close" data-close="overlay-distract">&times;</button>
+  <div class="eyebrow">What pulled your attention?</div>
+  <div class="chip-row" id="distract-chips" style="margin-top:10px;">
+    <button type="button" class="chip" data-d="New idea">New idea</button><button type="button" class="chip" data-d="Instagram">Instagram</button>
+    <button type="button" class="chip" data-d="YouTube">YouTube</button><button type="button" class="chip" data-d="WhatsApp">WhatsApp</button>
+    <button type="button" class="chip" data-d="AI tool">AI tool</button><button type="button" class="chip" data-d="Affiliate thought">Affiliate thought</button>
+    <button type="button" class="chip" data-d="Business thought">Business thought</button><button type="button" class="chip" data-d="Content thought">Content thought</button>
+    <button type="button" class="chip" data-d="Other">Other</button>
+  </div>
+</div>
+
+<!-- FOCUS MODE OVERLAY -->
+<div class="overlay" id="overlay-focus">
+  <button class="overlay-close" data-close="overlay-focus">&times;</button>
+  <div class="focus-center" id="focus-setup">
+    <div class="eyebrow">Focus Mode</div>
+    <div class="small" style="margin-bottom:14px;">ONE THING</div>
+    <div class="focus-task" id="focus-task-display">--</div>
+    <div class="field" style="width:100%; max-width:260px; margin-top:20px;">
+      <label>Minutes</label>
+      <input type="number" id="focus-minutes" value="45" min="5">
+    </div>
+    <button class="btn-primary" id="focus-start" style="margin-top:10px; padding:12px 30px;">Start</button>
+  </div>
+  <div class="focus-center" id="focus-running" style="display:none;">
+    <div class="eyebrow">Focus Mode</div>
+    <div class="focus-task" id="focus-task-display2">--</div>
+    <div class="focus-timer" id="focus-clock">45:00</div>
+    <div class="tiny">New ideas? Park them, don't chase them.</div>
+    <button class="btn-outline" id="focus-stop" style="margin-top:20px;">End session</button>
+  </div>
+  <div class="focus-center" id="focus-done" style="display:none;">
+    <div class="eyebrow">Did you finish?</div>
+    <div class="chip-row" style="justify-content:center; margin-top:14px;">
+      <button type="button" class="chip" data-outcome="yes">&#10003; Yes</button>
+      <button type="button" class="chip" data-outcome="partial">~ Partially</button>
+      <button type="button" class="chip" data-outcome="no">&#10007; No</button>
+    </div>
+    <div class="field" style="width:100%; max-width:320px; margin-top:16px; display:none;" id="focus-blocker-field">
+      <label>What blocked you?</label>
+      <input type="text" id="focus-blocker">
+    </div>
+    <button class="btn-primary" id="focus-finish" style="margin-top:16px; padding:12px 30px;">Done</button>
+  </div>
+</div>
+
+<!-- DAILY REVIEW OVERLAY -->
+<div class="overlay" id="overlay-review">
+  <button class="overlay-close" data-close="overlay-review">&times;</button>
+  <div class="eyebrow">Daily Review</div>
+  <div class="field"><label>Today's win</label><textarea id="rev-win" rows="2"></textarea></div>
+  <div class="field"><label>What I missed</label><textarea id="rev-missed" rows="2"></textarea></div>
+  <div class="field"><label>Why?</label><textarea id="rev-why" rows="2"></textarea></div>
+  <div class="field"><label>Biggest distraction</label><input type="text" id="rev-distraction"></div>
+  <div class="field"><label>One lesson</label><textarea id="rev-lesson" rows="2"></textarea></div>
+  <div class="field"><label>Tomorrow's ONE thing</label><input type="text" id="rev-tomorrow"></div>
+  <button class="btn-primary btn-block" id="rev-close">Close the day</button>
+  <div class="card gold-edge" id="rev-message-card" style="display:none; margin-top:16px;">
+    <div class="eyebrow">End of Day</div>
+    <div class="body-text" id="rev-message"></div>
+  </div>
+</div>
+
+<!-- WEEKLY REVIEW OVERLAY -->
+<div class="overlay" id="overlay-weekly">
+  <button class="overlay-close" data-close="overlay-weekly">&times;</button>
+  <div class="eyebrow">This Week's Focus</div>
+  <div class="body-text" id="weekly-focus-line" style="margin-bottom:20px;"></div>
+
+  <div class="eyebrow">What's Working</div>
+  <div class="insight-line"><span class="insight-dot">&#9679;</span><span id="weekly-working"></span></div>
+
+  <div class="eyebrow" style="margin-top:10px;">What's Holding You Back</div>
+  <div class="insight-line"><span class="insight-dot">&#9679;</span><span id="weekly-blocker"></span></div>
+
+  <div class="eyebrow" style="margin-top:10px;">Next Week's One Improvement</div>
+  <div class="insight-line"><span class="insight-dot">&#9679;</span><span id="weekly-improvement"></span></div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="eyebrow">The Numbers</div>
+    <div class="grid3" id="weekly-numbers"></div>
+  </div>
+</div>
+
+<!-- MONTHLY REVIEW OVERLAY -->
+<div class="overlay" id="overlay-monthly">
+  <button class="overlay-close" data-close="overlay-monthly">&times;</button>
+  <div class="eyebrow">This Month I Learned</div>
+  <div class="body-text" id="month-learned" style="margin-bottom:16px;"></div>
+
+  <div class="eyebrow">This Month I Built</div>
+  <div class="body-text" id="month-built" style="margin-bottom:16px;"></div>
+
+  <div class="eyebrow">This Month I Improved</div>
+  <div class="body-text" id="month-improved" style="margin-bottom:16px;"></div>
+
+  <div class="eyebrow">Next Month's One Focus</div>
+  <div class="body-text" id="month-focus" style="margin-bottom:20px;"></div>
+
+  <div class="card">
+    <div class="eyebrow">The Numbers</div>
+    <div class="grid3" id="month-numbers"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-lead" role="dialog" aria-modal="true" aria-labelledby="lead-title">
+  <button class="overlay-close" data-close="overlay-lead" type="button" aria-label="Close lead form">&times;</button>
+  <div class="eyebrow" id="lead-title">Lead</div><input type="hidden" id="lead-id">
+  <div class="compact-form">
+    <div><label for="lead-name">Lead name</label><input id="lead-name" type="text" required></div>
+    <div><label for="lead-source">Source</label><input id="lead-source" type="text" placeholder="Referral, Instagram…"></div>
+    <div><label for="lead-status">Status</label><select id="lead-status"><option>New</option><option>Contacted</option><option>Conversation</option><option>Interested</option><option>Follow-up</option><option>Presentation</option><option>Negotiation</option><option>Closed</option><option>Not Interested</option><option>Lost</option></select></div>
+    <div><label for="lead-followup">Next follow-up</label><input id="lead-followup" type="date"></div>
+    <div class="wide"><label for="lead-contact">Last contact</label><input id="lead-contact" type="date"></div>
+    <div class="wide"><label for="lead-notes">Notes</label><textarea id="lead-notes" rows="3"></textarea></div>
+  </div><div class="section-actions"><button class="btn-primary" id="lead-save" type="button">Save lead</button><button class="btn-dark" id="lead-delete" type="button" style="display:none">Delete</button></div>
+</div>
+
+<div class="overlay" id="overlay-content" role="dialog" aria-modal="true" aria-labelledby="content-title">
+  <button class="overlay-close" data-close="overlay-content" type="button" aria-label="Close content form">&times;</button>
+  <div class="eyebrow" id="content-title">Content item</div><input type="hidden" id="content-id">
+  <div class="compact-form">
+    <div class="wide"><label for="content-topic">Topic</label><input id="content-topic" type="text" required></div>
+    <div><label for="content-stream">Stream</label><select id="content-stream"><option value="Zaman Sir / Affiliate / Digital Entrepreneurship">Zaman Sir / Affiliate</option><option value="Kunal AI / Technology Personal Brand">Kunal AI / Technology</option></select></div>
+    <div><label for="content-platform">Platform</label><input id="content-platform" type="text" placeholder="Instagram, YouTube…"></div>
+    <div><label for="content-format">Format</label><input id="content-format" type="text" placeholder="Reel, post, video…"></div>
+    <div><label for="content-status">Status</label><select id="content-status"><option>Idea</option><option>Script</option><option>Recorded</option><option>Editing</option><option>Ready</option><option>Published</option></select></div>
+  </div><div class="section-actions"><button class="btn-primary" id="content-save" type="button">Save item</button><button class="btn-dark" id="content-delete" type="button" style="display:none">Delete</button></div>
+</div>
+
+<div class="overlay" id="overlay-report" role="dialog" aria-modal="true" aria-labelledby="report-title">
+  <button class="overlay-close" data-close="overlay-report" type="button" aria-label="Close report">&times;</button><div class="eyebrow" id="report-title">Daily report</div><div id="report-body" class="body-text"></div>
+</div>
+
+<div class="overlay" id="overlay-restore" role="dialog" aria-modal="true" aria-labelledby="restore-title">
+  <button class="overlay-close" data-close="overlay-restore" type="button" aria-label="Close data tools">&times;</button><div class="eyebrow" id="restore-title">Data recovery</div>
+  <div class="body-text">Back up before restoring or resetting. Restoring this backup will replace current local data.</div>
+  <div class="section-actions"><button class="btn-outline" id="backup-btn" type="button">Download backup</button><label class="btn-dark" for="restore-file">Choose backup<input id="restore-file" type="file" accept="application/json,.json" hidden></label><button class="btn-dark" id="reset-btn" type="button">Reset all data</button></div><div class="small" id="restore-status" style="margin-top:12px"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'kdf-state-v1', SCHEMA_VERSION = 2;
+  var TARGETS = { calls:55, followups:20, sales:1, steps:10000, water:3, learnhrs:0.5, meditation:30, exercise:15, reading:5, affiliateMins:120 };
+
+  var ROUTINE = [
+    {id:'wake', start:'04:45', end:'04:45', label:'Wake up', lane:'LIFE'},
+    {id:'meditation', start:'04:45', end:'05:30', label:'Meditation', lane:'LIFE'},
+    {id:'exercise', start:'05:30', end:'05:45', label:'Exercise', lane:'LIFE'},
+    {id:'prepare', start:'05:45', end:'07:00', label:'Prepare / Travel', lane:'LIFE'},
+    {id:'office', start:'07:00', end:'16:00', label:'Office', lane:'CAREER'},
+    {id:'transition', start:'16:00', end:'17:00', label:'Travel / Transition', lane:'LIFE'},
+    {id:'affiliate', start:'17:00', end:'19:00', label:'Affiliate calls + follow-ups', lane:'BUSINESS'},
+    {id:'content', start:'19:30', end:'20:30', label:'Create today\'s content', lane:'CONTENT'},
+    {id:'reading', start:'20:30', end:'21:00', label:'Reading', lane:'LIFE'},
+    {id:'review', start:'21:00', end:'21:15', label:'Review', lane:'LIFE'},
+    {id:'sleep', start:'22:00', end:'22:00', label:'Sleep', lane:'LIFE'}
+  ];
+
+  var DEFAULT_MVD = ['10 fresh calls attempted', 'Meditation done', 'Self-review written'];
+  var state, recoveryMessage = '', focusTimerId = null, focusSecondsLeft = 0, focusOutcomeSel = null;
+
+  function fmtKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function minutesOf(t){ var p=t.split(':'); return parseInt(p[0],10)*60+parseInt(p[1],10); }
+
+  function emptyState(){ return {schemaVersion:SCHEMA_VERSION, entries:{}, leads:[], content:[], goals:{ninety:'',month:'',week:''}, identity:'', strategy:null, mvd:DEFAULT_MVD.slice()}; }
+  function normalizeEntry(e){
+    e = e && typeof e==='object' ? e : {};
+    e.priority = typeof e.priority==='string'?e.priority:''; e.priorityDone = ['yes','partial','no'].indexOf(e.priorityDone)>=0?e.priorityDone:null;
+    e.routineChecks = e.routineChecks && typeof e.routineChecks==='object'?e.routineChecks:{};
+    e.routineStatus = e.routineStatus && typeof e.routineStatus==='object'?e.routineStatus:{};
+    Object.keys(e.routineChecks).forEach(function(k){ if(e.routineChecks[k] && !e.routineStatus[k]) e.routineStatus[k]='completed'; });
+    e.habits = e.habits && typeof e.habits==='object'?e.habits:{};
+    ['meditation','steps','water','sleep','learnhrs','calls','followups','sales','exercise','reading','affiliateMins'].forEach(function(k){ e.habits[k]=Math.max(0,Number(e.habits[k])||0); });
+    e.habits.shot=!!e.habits.shot; e.habits.posted=!!e.habits.posted;
+    e.ideas=Array.isArray(e.ideas)?e.ideas:[]; e.distractions=Array.isArray(e.distractions)?e.distractions:[]; e.focusSessions=Array.isArray(e.focusSessions)?e.focusSessions:[];
+    e.mvdChecks=e.mvdChecks && typeof e.mvdChecks==='object'?e.mvdChecks:{}; return e;
+  }
+  function normalizeState(s){
+    if(!s || typeof s!=='object' || Array.isArray(s)) throw new Error('Backup is not a valid Kunal Daily Focus state.');
+    var n=emptyState(); n.entries=s.entries && typeof s.entries==='object'&&!Array.isArray(s.entries)?s.entries:{};
+    Object.keys(n.entries).forEach(function(k){ n.entries[k]=normalizeEntry(n.entries[k]); });
+    n.goals=s.goals&&typeof s.goals==='object'?{ninety:String(s.goals.ninety||''),month:String(s.goals.month||''),week:String(s.goals.week||'')}:n.goals;
+    n.identity=typeof s.identity==='string'?s.identity:''; n.strategy=s.strategy&&typeof s.strategy==='object'?s.strategy:null; n.mvd=Array.isArray(s.mvd)&&s.mvd.length?s.mvd.map(String):n.mvd;
+    n.leads=Array.isArray(s.leads)?s.leads.filter(function(x){return x&&typeof x==='object';}):[]; n.content=Array.isArray(s.content)?s.content.filter(function(x){return x&&typeof x==='object';}):[]; return n;
+  }
+  function loadState(){
+    var raw; try{ raw=localStorage.getItem(STORAGE_KEY); if(!raw) return emptyState(); return normalizeState(JSON.parse(raw)); }
+    catch(e){
+      if(raw){ try{ localStorage.setItem(STORAGE_KEY+'-corrupt-'+Date.now(),raw); }catch(ignore){} }
+      recoveryMessage='Your saved data could not be read. It was preserved locally where possible; restore a backup or reset only after exporting any recoverable data.'; return emptyState();
+    }
+  }
+  function saveState(){ try{ state.schemaVersion=SCHEMA_VERSION; localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); return true; }catch(e){ recoveryMessage='Your latest change could not be saved. Download a backup and check browser storage.'; renderNotice(); return false; } }
+  function renderNotice(){ var el=document.getElementById('data-notice'); if(!recoveryMessage){el.classList.remove('show');return;} el.innerHTML=''; var text=document.createElement('div'); text.textContent=recoveryMessage; el.appendChild(text); var b=document.createElement('button'); b.className='btn-outline'; b.type='button'; b.textContent='Open data recovery'; b.addEventListener('click',function(){openOverlay('overlay-restore');}); el.appendChild(b); el.classList.add('show'); }
+
+  function blankEntry(){
+    return {
+      priority:'', priorityDone:null,
+      routineChecks:{},
+      routineStatus:{}, habits:{ meditation:0, steps:0, water:0, sleep:0, learnhrs:0, calls:0, followups:0, sales:0, exercise:0, reading:0, affiliateMins:0, shot:false, posted:false },
+      ideas:[], distractions:[], focus:null, focusSessions:[], focusDraft:null, review:null, mvdChecks:{}, lowEnergy:false
+    };
+  }
+  function getToday(){ return new Date(); }
+  var today = getToday();
+  function getTodayKey(){ return fmtKey(getToday()); }
+  function entry(){ var key=getTodayKey(); if(!state.entries[key]) state.entries[key]=blankEntry(); return state.entries[key]=normalizeEntry(state.entries[key]); }
+  function entryFor(key){ return state.entries[key]; }
+
+  function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(function(){ t.style.display='none'; },2200); }
+
+  // ---------- HERO ----------
+  function renderHero(){
+    var hr = today.getHours();
+    var greet = hr<12?'Good Morning, Kunal':(hr<17?'Good Afternoon, Kunal':'Good Evening, Kunal');
+    document.getElementById('hero-greet').textContent = greet;
+    document.getElementById('hero-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long', day:'numeric', month:'long'});
+    document.getElementById('hero-sub').textContent = 'Phase 1 · One day. One priority. One next action.';
+  }
+
+  // ---------- PRIORITY / PROGRESS ----------
+  function habitHitRatio(e){
+    var t=targetsFor(e);
+    var checks = [
+      e.habits.meditation>=t.meditation,
+      e.habits.steps>=t.steps,
+      e.habits.water>=t.water,
+      e.habits.learnhrs>=t.learnhrs,
+      e.habits.calls>=t.calls,
+      e.habits.followups>=t.followups,
+      e.habits.sales>=t.sales,
+      e.habits.shot, e.habits.posted
+    ];
+    var hits = checks.filter(Boolean).length;
+    return hits/checks.length;
+  }
+  function computeProgress(e){
+    var now = getToday(), mins=now.getHours()*60+now.getMinutes();
+    var eligible=ROUTINE.filter(function(b){return minutesOf(b.start)<=mins && minutesOf(b.end)>minutesOf(b.start);});
+    var routineDone=eligible.filter(function(b){return e.routineStatus[b.id]==='completed';}).length;
+    var routineRatio = eligible.length? routineDone/eligible.length : 0;
+    var habitRatio = habitHitRatio(e);
+    var priorityRatio = e.priorityDone==='yes'?1:(e.priorityDone==='partial'?0.5:0);
+    var pct = Math.round((routineRatio*0.35 + habitRatio*0.35 + priorityRatio*0.30)*100);
+    return Math.max(0, Math.min(100, pct));
+  }
+  function renderPriority(){
+    var e = entry();
+    document.getElementById('priority-input').value = e.priority || '';
+    var pct = computeProgress(e);
+    document.getElementById('progress-pct').textContent = pct;
+    document.getElementById('progress-bar').style.width = pct+'%';
+  }
+  document.getElementById('priority-save').addEventListener('click', function(){
+    var e = entry();
+    e.priority = document.getElementById('priority-input').value.trim();
+    saveState(); toast('Priority set.'); renderAll();
+  });
+
+  // ---------- DAILY THOUGHT ----------
+  function last7Keys(){
+    var keys=[];
+    for(var i=1;i<=7;i++){ var d=new Date(today); d.setDate(d.getDate()-i); keys.push(fmtKey(d)); }
+    return keys;
+  }
+  function computeThought(e){
+    var recentKeys = last7Keys();
+    var recentEntries = recentKeys.map(function(k){ return state.entries[k]; }).filter(Boolean);
+
+    if(e.priority && e.priorityDone!=='yes'){
+      return { text:'Aaj ka sirf ek kaam hai: "'+e.priority+'". Baaki sab shaam ke baad sochna.', coach:'Protect the block for "'+e.priority+'" before anything else opens.' };
+    }
+    if((e.distractions||[]).length>=3){
+      return { text:'Tumhare paas ideas ki kami nahi hai. Aaj tumhe ideas nahi, execution chahiye. Naye thought ko parking lot mein rakho aur current task complete karo.', coach:'Park the next idea instead of chasing it — finish what\'s open.' };
+    }
+    var contentWeakDays = recentEntries.filter(function(en){ return !en.habits.shot && !en.habits.posted; }).length;
+    if(recentEntries.length>=3 && contentWeakDays>=2){
+      return { text:'Aaj perfect video banane ki zarurat nahi hai. Bas useful value share karke publish karo. Consistency tumhari personal brand ko build karegi.', coach:'Today\'s content block: ship something small, don\'t chase perfect.' };
+    }
+    var affiliateWeakDays = recentEntries.filter(function(en){ return en.habits.calls<TARGETS.calls || en.habits.followups<TARGETS.followups; }).length;
+    if(recentEntries.length>=3 && affiliateWeakDays>=3){
+      return { text:'Aaj revenue ke baare mein sochne se zyada important hai conversations create karna. Follow-up complete karo — result baad mein aayega.', coach:'Tonight\'s priority is follow-ups, not strategy research.' };
+    }
+    var healthWeakDays = recentEntries.filter(function(en){ return en.habits.steps<TARGETS.steps || en.habits.water<TARGETS.water; }).length;
+    if(recentEntries.length>=3 && healthWeakDays>=3){
+      return { text:'Business build karte waqt body ko ignore mat karo. Aaj ke 10,000 steps aur basic movement tumhari productivity ka part hain.', coach:'Take the walk before you take the next call.' };
+    }
+    var strongDays = recentEntries.filter(function(en){ return habitHitRatio(en)>=0.7; }).length;
+    if(recentEntries.length>=5 && strongDays>=5){
+      return { text:'Is week ka biggest win results nahi, consistency hai. Jo system kaam kar raha hai usse unnecessarily mat badlo.', coach:'Keep today identical to your best recent days.' };
+    }
+    return { text:'Chhota progress bhi progress hai. Aaj ka ek kaam complete karo, kal apne aap behtar hoga.', coach:'Pick the smallest next action and start there.' };
+  }
+  function renderThought(){
+    var e = entry();
+    var t = computeThought(e);
+    document.getElementById('thought-text').textContent = t.text;
+    document.getElementById('coach-note').textContent = "COACH'S NOTE — "+t.coach;
+  }
+
+  // ---------- CURRENT MODE ----------
+  function currentBlock(){
+    var mins = today.getHours()*60+today.getMinutes();
+    for(var i=0;i<ROUTINE.length;i++){
+      var b = ROUTINE[i];
+      var s = minutesOf(b.start), en = minutesOf(b.end);
+      if(en>s && mins>=s && mins<en) return b;
+    }
+    return null;
+  }
+  function renderMode(){
+    var b = currentBlock();
+    if(!b){ document.getElementById('mode-lane').textContent='LIFE'; document.getElementById('mode-time').textContent='Unscheduled time'; document.getElementById('mode-task').textContent='Free block — choose deliberately.'; return; }
+    document.getElementById('mode-lane').textContent = b.lane;
+    document.getElementById('mode-time').textContent = b.start+' – '+b.end;
+    document.getElementById('mode-task').textContent = b.label;
+  }
+
+  // ---------- ROUTINE TIMELINE ----------
+  function renderRoutine(){
+    var e = entry();
+    var mins = today.getHours()*60+today.getMinutes();
+    var el = document.getElementById('routine-list'); el.innerHTML='';
+    ROUTINE.forEach(function(b){
+      var s = minutesOf(b.start), en = minutesOf(b.end);
+      var isActive = en>s && mins>=s && mins<en;
+      var isPast = en>s && mins>=en;
+      var status = e.routineStatus[b.id] || (isActive?'active':(isPast?'missed':'upcoming'));
+      var completed = status==='completed';
+      var row = document.createElement('div');
+      row.className = 'timeline-item '+status;
+      row.innerHTML = '<div class="timeline-mark">'+(completed?'&#10003;':(status==='missed'?'&#8212;':(isActive?'&#9679;':'&#9675;')))+'</div>'+
+        '<div class="timeline-time">'+b.start+'</div>'+
+        '<div class="timeline-label">'+b.label+'<div class="status '+status+'">'+status+'</div></div>';
+      var actions=document.createElement('div'); actions.className='timeline-actions';
+      var complete=document.createElement('button'); complete.type='button'; complete.className='mini-btn'; complete.textContent=completed?'Undo':'Complete';
+      complete.addEventListener('click',function(){ e.routineStatus[b.id]=completed?(isPast?'missed':(isActive?'active':'upcoming')):'completed'; e.routineChecks[b.id]=!completed; saveState(); renderAll(); }); actions.appendChild(complete);
+      if(!completed && status!=='missed'){ var miss=document.createElement('button'); miss.type='button'; miss.className='mini-btn'; miss.textContent='Miss'; miss.addEventListener('click',function(){e.routineStatus[b.id]='missed'; e.routineChecks[b.id]=false; saveState();renderAll();});actions.appendChild(miss); }
+      row.appendChild(actions);
+      el.appendChild(row);
+    });
+  }
+
+  // ---------- HABITS ----------
+  var HABIT_DEFS = [
+    {key:'meditation', name:'Meditation', unit:'min', target:TARGETS.meditation},
+    {key:'steps', name:'Steps', unit:'', target:TARGETS.steps},
+    {key:'water', name:'Water', unit:'L', target:TARGETS.water, step:0.5},
+    {key:'learnhrs', name:'Learning', unit:'hrs', target:TARGETS.learnhrs, step:0.25},
+    {key:'calls', name:'Calls', unit:'', target:TARGETS.calls},
+    {key:'followups', name:'Follow-ups', unit:'', target:TARGETS.followups},
+    {key:'sales', name:'Sales', unit:'', target:TARGETS.sales},
+    {key:'exercise', name:'Exercise', unit:'min', target:TARGETS.exercise},
+    {key:'reading', name:'Reading', unit:'pages', target:TARGETS.reading},
+    {key:'affiliateMins', name:'Affiliate', unit:'min', target:TARGETS.affiliateMins}
+  ];
+  function targetsFor(e){ var t=Object.assign({},TARGETS); if(e&&e.lowEnergy){t.meditation=10;t.steps=5000;t.exercise=10;t.reading=5;t.affiliateMins=30;} return t; }
+  function habitStreak(key, target, isBool){
+    var streak=0, d=new Date(today);
+    while(true){
+      var k = fmtKey(d); var en = state.entries[k];
+      if(!en){ break; }
+      var val = en.habits[key];
+      var hit = isBool ? !!val : (val||0)>=target;
+      if(hit){ streak++; d.setDate(d.getDate()-1); } else break;
+    }
+    return streak;
+  }
+  function renderHabits(){
+    var e = entry();
+    var activeTargets=targetsFor(e);
+    var grid = document.getElementById('habit-grid'); grid.innerHTML='';
+    HABIT_DEFS.forEach(function(h){
+      var val = e.habits[h.key]||0;
+      var target=activeTargets[h.key]||h.target, hit = val>=target;
+      var streak = habitStreak(h.key, h.target, false);
+      var card = document.createElement('div');
+      card.className = 'habit-card'+(hit?' hit':'');
+      card.innerHTML = '<div class="habit-name">'+h.name+'</div>'+
+        '<input type="number" class="habit-inline-input" min="0" step="'+(h.step||1)+'" value="'+(val||'')+'" data-key="'+h.key+'" placeholder="0">'+
+        '<div class="habit-target">/ '+target+' '+h.unit+'</div>'+
+        (streak>=2 ? '<div class="streak-badge">&#128293; '+streak+'d streak</div>' : '');
+      grid.appendChild(card);
+    });
+    // content toggles as their own cards
+    ['shot','posted'].forEach(function(key){
+      var val = e.habits[key];
+      var streak = habitStreak(key, 1, true);
+      var card = document.createElement('div');
+      card.className = 'habit-card'+(val?' hit':'');
+      card.style.cursor='pointer';
+      card.innerHTML = '<div class="habit-name">'+(key==='shot'?'Content Shot':'Content Posted')+'</div>'+
+        '<div class="habit-check '+(val?'yes':'no')+'">'+(val?'&#10003; Done':'Not yet')+'</div>'+
+        (streak>=2 ? '<div class="streak-badge">&#128293; '+streak+'d streak</div>' : '');
+      card.addEventListener('click', function(){ e.habits[key]=!e.habits[key]; saveState(); renderAll(); });
+      grid.appendChild(card);
+    });
+    grid.querySelectorAll('.habit-inline-input').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        e.habits[inp.dataset.key] = parseFloat(inp.value)||0;
+        saveState(); renderAll();
+      });
+    });
+  }
+
+  // ---------- EXECUTION SCORE ----------
+  function scoreVerdict(pct){
+    if(pct>=80) return 'Strong execution';
+    if(pct>=60) return 'Good progress';
+    if(pct>=40) return 'Needs attention';
+    return 'Reset & refocus';
+  }
+  function renderScore(){
+    var e = entry();
+    var t=targetsFor(e), nowMinutes=today.getHours()*60+today.getMinutes(), officeStatus=e.routineStatus.office;
+    function measured(name,pct,hasData){return {name:name,pct:Math.max(0,Math.min(100,Math.round(pct))),pending:!hasData};}
+    var businessData=e.habits.calls||e.habits.followups||e.habits.sales||e.habits.affiliateMins;
+    var contentData=e.habits.shot||e.habits.posted||state.content.some(function(c){return c.createdDate===getTodayKey();});
+    var healthData=e.habits.meditation||e.habits.steps||e.habits.water||e.habits.exercise;
+    var focusData=e.focusSessions.length>0 || e.priorityDone!==null;
+    var reviewData=!!e.review;
+    var cats=[
+      measured('Career',officeStatus==='completed'?100:0,nowMinutes>=minutesOf('16:00')&&(officeStatus==='completed'||officeStatus==='missed')),
+      measured('Business',((e.habits.calls/t.calls)+(e.habits.followups/t.followups)+(e.habits.sales/t.sales)+(e.habits.affiliateMins/t.affiliateMins))*25,!!businessData),
+      measured('Content',((e.habits.shot?1:0)+(e.habits.posted?1:0))*50,!!contentData),
+      measured('Health',((e.habits.meditation/t.meditation)+(e.habits.steps/t.steps)+(e.habits.water/t.water)+(e.habits.exercise/t.exercise))*25,!!healthData),
+      measured('Focus',e.priorityDone==='yes'?100:(e.priorityDone==='partial'?50:0),focusData),
+      measured('Learning',(e.habits.learnhrs/t.learnhrs)*100,e.habits.learnhrs>0),
+      measured('Review',100,reviewData)
+    ];
+    var scoredCats=cats.filter(function(c){return !c.pending;}), overall=scoredCats.length?Math.round(scoredCats.reduce(function(a,c){return a+c.pct;},0)/scoredCats.length):0;
+
+    document.getElementById('score-number').textContent = overall;
+    document.getElementById('score-verdict').textContent = (overall<40 && mvdComplete(e)) ? 'Day protected (Minimum Viable Day)' : scoreVerdict(overall);
+
+    var bd = document.getElementById('score-breakdown'); bd.innerHTML='';
+    cats.forEach(function(c){
+      var row = document.createElement('div');
+      row.className='score-cat-row';
+      if(c.pending){
+        row.innerHTML = '<div class="score-cat-name">'+c.name+'</div>'+
+          '<div class="score-cat-bar"><div class="score-cat-fill" style="width:0%; opacity:.3;"></div></div>'+
+          '<div class="score-cat-pct" style="color:var(--grey-dim);">neutral</div>';
+      } else {
+        row.innerHTML = '<div class="score-cat-name">'+c.name+'</div>'+
+          '<div class="score-cat-bar"><div class="score-cat-fill" style="width:'+c.pct+'%;"></div></div>'+
+          '<div class="score-cat-pct">'+c.pct+'%</div>';
+      }
+      bd.appendChild(row);
+    });
+  }
+
+  // ---------- IDEAS ----------
+  var ideaCat = null, ideaPri = null;
+  document.querySelectorAll('#idea-cat-chips .chip').forEach(function(c){
+    c.addEventListener('click', function(){ ideaCat=c.dataset.cat; document.querySelectorAll('#idea-cat-chips .chip').forEach(function(x){x.classList.remove('selected');}); c.classList.add('selected'); });
+  });
+  document.querySelectorAll('#idea-pri-chips .chip').forEach(function(c){
+    c.addEventListener('click', function(){ ideaPri=c.dataset.pri; document.querySelectorAll('#idea-pri-chips .chip').forEach(function(x){x.classList.remove('selected');}); c.classList.add('selected'); });
+  });
+  document.getElementById('idea-save').addEventListener('click', function(){
+    var text = document.getElementById('idea-text').value.trim();
+    if(!text){ toast('Write the idea first.'); return; }
+    var e = entry();
+    e.ideas.push({ text:text, category:ideaCat||'Other', priority:ideaPri||'Medium', time:today.toTimeString().slice(0,5) });
+    saveState();
+    document.getElementById('idea-text').value='';
+    closeOverlay('overlay-idea');
+    toast('Idea parked. Stay focused on your current task.');
+    renderAll();
+  });
+  function renderIdeas(){
+    var e = entry();
+    document.getElementById('idea-count').textContent = e.ideas.length+' parked';
+    var el = document.getElementById('idea-list'); el.innerHTML='';
+    if(e.ideas.length===0){ el.innerHTML = '<div class="empty-state"><span class="big">Nothing here yet.</span>Start by adding today\'s first idea.</div>'; return; }
+    e.ideas.slice().reverse().forEach(function(i){
+      var d = document.createElement('div'); d.className='list-item';
+      d.innerHTML = i.text+'<div class="meta">'+i.category+' &middot; '+i.priority+' priority &middot; '+i.time+'</div>';
+      el.appendChild(d);
+    });
+  }
+
+  // ---------- DISTRACTIONS ----------
+  document.querySelectorAll('#distract-chips .chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      var e = entry();
+      e.distractions.push({ reason:c.dataset.d, time:today.toTimeString().slice(0,5) });
+      saveState();
+      closeOverlay('overlay-distract');
+      toast('Logged. Back to current task.');
+      renderAll();
+    });
+  });
+  function renderDistractions(){
+    var e = entry();
+    document.getElementById('distract-count').textContent = e.distractions.length+' logged';
+    var el = document.getElementById('distract-list'); el.innerHTML='';
+    if(e.distractions.length===0){ el.innerHTML = '<div class="empty-state"><span class="big">Clean so far.</span>No distractions logged today.</div>'; return; }
+    e.distractions.slice().reverse().forEach(function(dd){
+      var d = document.createElement('div'); d.className='list-item';
+      d.innerHTML = dd.reason+'<div class="meta">'+dd.time+'</div>';
+      el.appendChild(d);
+    });
+  }
+
+  // ---------- FOCUS MODE ----------
+  document.getElementById('qa-focus').addEventListener('click', function(){
+    var e = entry();
+    clearInterval(focusTimerId); focusTimerId=null; focusOutcomeSel=null; document.getElementById('focus-blocker').value=''; document.getElementById('focus-blocker-field').style.display='none'; document.querySelectorAll('#focus-done .chip').forEach(function(x){x.classList.remove('selected');});
+    document.getElementById('focus-task-display').textContent = e.priority || 'Set today\'s ONE thing first';
+    if(e.focusDraft && e.focusDraft.status==='paused'){focusSecondsLeft=e.focusDraft.remaining||e.focusDraft.duration;document.getElementById('focus-minutes').value=Math.ceil(focusSecondsLeft/60);document.getElementById('focus-start').textContent='Resume';}else{document.getElementById('focus-start').textContent='Start';}
+    document.getElementById('focus-setup').style.display='flex';
+    document.getElementById('focus-running').style.display='none';
+    document.getElementById('focus-done').style.display='none';
+    openOverlay('overlay-focus');
+  });
+  document.getElementById('focus-start').addEventListener('click', function(){
+    clearInterval(focusTimerId); focusTimerId=null; focusOutcomeSel=null;
+    var draft=entry().focusDraft, mins = parseFloat(document.getElementById('focus-minutes').value)||45;
+    focusSecondsLeft = draft&&draft.status==='paused' ? (draft.remaining||draft.duration) : Math.round(mins*60);
+    entry().focusDraft=draft&&draft.status==='paused'?draft:{task:entry().priority||'Focused work',startedAt:Date.now(),duration:focusSecondsLeft}; entry().focusDraft.status='running'; saveState();
+    document.getElementById('focus-task-display2').textContent = entry().priority || 'Focused work';
+    document.getElementById('focus-setup').style.display='none';
+    document.getElementById('focus-running').style.display='flex';
+    tickFocus();
+    focusTimerId = setInterval(tickFocus, 1000);
+  });
+  function tickFocus(){
+    if(focusSecondsLeft<=0){ clearInterval(focusTimerId); showFocusDone(); return; }
+    var m = Math.floor(focusSecondsLeft/60), s = focusSecondsLeft%60;
+    document.getElementById('focus-clock').textContent = pad(m)+':'+pad(s);
+    focusSecondsLeft--;
+    if(entry().focusDraft){entry().focusDraft.remaining=focusSecondsLeft; entry().focusDraft.updatedAt=Date.now(); saveState();}
+  }
+  document.getElementById('focus-stop').addEventListener('click', function(){ clearInterval(focusTimerId); showFocusDone(); });
+  function showFocusDone(){
+    clearInterval(focusTimerId); focusTimerId=null;
+    document.getElementById('focus-running').style.display='none';
+    document.getElementById('focus-done').style.display='flex';
+  }
+  document.querySelectorAll('#focus-done .chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      focusOutcomeSel = c.dataset.outcome;
+      document.querySelectorAll('#focus-done .chip').forEach(function(x){x.classList.remove('selected');});
+      c.classList.add('selected');
+      document.getElementById('focus-blocker-field').style.display = (focusOutcomeSel!=='yes')?'block':'none';
+    });
+  });
+  document.getElementById('focus-finish').addEventListener('click', function(){
+    var e = entry();
+    var session = { task:e.priority, outcome:focusOutcomeSel||'partial', blocker:document.getElementById('focus-blocker').value||'', startedAt:e.focusDraft?e.focusDraft.startedAt:Date.now(), endedAt:Date.now() };
+    e.focus = session; e.focusSessions.push(session); e.focusDraft=null; clearInterval(focusTimerId); focusTimerId=null;
+    if(focusOutcomeSel==='yes') e.priorityDone='yes';
+    else if(focusOutcomeSel==='partial') e.priorityDone='partial';
+    saveState();
+    closeOverlay('overlay-focus');
+    toast('Focus session logged.');
+    renderAll();
+  });
+
+  // ---------- DAILY REVIEW ----------
+  document.getElementById('qa-review').addEventListener('click', function(){
+    var e = entry();
+    document.getElementById('rev-win').value = e.review? e.review.win:'';
+    document.getElementById('rev-missed').value = e.review? e.review.missed:'';
+    document.getElementById('rev-why').value = e.review? e.review.why:'';
+    document.getElementById('rev-distraction').value = e.review? e.review.distraction:'';
+    document.getElementById('rev-lesson').value = e.review? e.review.lesson:'';
+    document.getElementById('rev-tomorrow').value = e.review? e.review.tomorrow:'';
+    document.getElementById('rev-message-card').style.display='none';
+    openOverlay('overlay-review');
+  });
+  document.getElementById('rev-close').addEventListener('click', function(){
+    var e = entry();
+    e.review = {
+      win: document.getElementById('rev-win').value.trim(),
+      missed: document.getElementById('rev-missed').value.trim(),
+      why: document.getElementById('rev-why').value.trim(),
+      distraction: document.getElementById('rev-distraction').value.trim(),
+      lesson: document.getElementById('rev-lesson').value.trim(),
+      tomorrow: document.getElementById('rev-tomorrow').value.trim(),
+      closedAt: today.toTimeString().slice(0,5)
+    };
+    saveState();
+    var pct = computeProgress(e);
+    var msg;
+    if(pct>=70) msg = 'Today wasn\'t perfect, but you protected your important habits. Tomorrow, start with "'+ (e.review.tomorrow||'your next one thing') +'" before anything else opens.';
+    else if(pct>=40) msg = 'A mixed day — some things landed, some didn\'t. Tomorrow, focus only on "'+(e.review.tomorrow||'one thing')+'" until it\'s done.';
+    else msg = 'Today was light on execution. That\'s data, not a verdict. Tomorrow: one small win first thing — "'+(e.review.tomorrow||'your one thing')+'".';
+    document.getElementById('rev-message').textContent = msg;
+    document.getElementById('rev-message-card').style.display='block';
+    renderAll();
+  });
+
+  // ---------- OVERLAYS ----------
+  function openOverlay(id){ var overlay=document.getElementById(id); overlay.classList.add('open'); var first=overlay.querySelector('input:not([type=hidden]), textarea, select, button'); if(first) setTimeout(function(){first.focus();},0); }
+  function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay-close').forEach(function(b){ b.addEventListener('click', function(){
+    if(b.dataset.close==='overlay-focus' && focusTimerId){
+      if(!confirm('Pause this focus session and close Focus Mode?')) return;
+      clearInterval(focusTimerId); focusTimerId=null; if(entry().focusDraft){entry().focusDraft.status='paused';entry().focusDraft.remaining=focusSecondsLeft;saveState();}
+    }
+    closeOverlay(b.dataset.close);
+  }); });
+  document.getElementById('qa-park').addEventListener('click', function(){ openOverlay('overlay-idea'); });
+  document.getElementById('qa-distract').addEventListener('click', function(){ openOverlay('overlay-distract'); });
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'){var open=document.querySelector('.overlay.open');if(open){var close=open.querySelector('.overlay-close');if(close)close.click();}}});
+
+  // ---------- EXPORT ----------
+  document.getElementById('export-btn').addEventListener('click', function(){
+    openOverlay('overlay-restore');
+  });
+  document.getElementById('backup-btn').addEventListener('click', function(){downloadJSON(state,'kunal-daily-focus-backup.json');});
+  document.getElementById('restore-file').addEventListener('change', function(ev){
+    var file=ev.target.files&&ev.target.files[0]; if(!file)return;
+    var reader=new FileReader(); reader.onload=function(){try{var candidate=normalizeState(JSON.parse(reader.result));if(!confirm('Restoring this backup will replace current local data.'))return;state=candidate;recoveryMessage='';saveState();document.getElementById('restore-status').textContent='Backup restored.';renderAll();}catch(e){document.getElementById('restore-status').textContent='Invalid backup: '+e.message;}};reader.onerror=function(){document.getElementById('restore-status').textContent='The selected file could not be read.';};reader.readAsText(file); ev.target.value='';
+  });
+  document.getElementById('reset-btn').addEventListener('click', function(){if(!confirm('Reset all local data? This cannot be undone unless you first download a backup.'))return;state=emptyState();recoveryMessage='';saveState();document.getElementById('restore-status').textContent='All local data has been reset.';renderAll();});
+
+  // ---------- GOAL HIERARCHY ----------
+  document.getElementById('goals-toggle').addEventListener('click', function(){
+    var body = document.getElementById('goals-body');
+    var open = body.style.display==='block';
+    body.style.display = open?'none':'block';
+    document.getElementById('goals-chevron').textContent = open?'show':'hide';
+  });
+  document.getElementById('goals-save').addEventListener('click', function(){
+    state.goals.ninety = document.getElementById('goal-90').value.trim();
+    state.goals.month = document.getElementById('goal-month').value.trim();
+    state.goals.week = document.getElementById('goal-week').value.trim();
+    saveState(); toast('Goals saved.'); renderGoals();
+  });
+  function renderGoals(){
+    document.getElementById('goal-90').value = state.goals.ninety||'';
+    document.getElementById('goal-month').value = state.goals.month||'';
+    document.getElementById('goal-week').value = state.goals.week||'';
+    var parts = [];
+    if(state.goals.week) parts.push('Week: '+state.goals.week);
+    if(state.goals.month) parts.push('Month: '+state.goals.month);
+    if(state.goals.ninety) parts.push('90-Day: '+state.goals.ninety);
+    document.getElementById('goals-summary').textContent = parts.length? parts.join(' · ') : 'No goals set yet — tap to add.';
+  }
+
+  // ---------- IDENTITY ----------
+  document.getElementById('identity-save').addEventListener('click', function(){
+    state.identity = document.getElementById('identity-input').value.trim();
+    saveState();
+    document.getElementById('identity-saved-note').textContent = state.identity ? 'Saved.' : '';
+    toast('Identity statement saved.');
+  });
+  function renderIdentity(){
+    document.getElementById('identity-input').value = state.identity||'';
+  }
+
+  // ---------- MINIMUM VIABLE DAY ----------
+  function renderMVD(){
+    var e = entry();
+    var list = document.getElementById('mvd-list'); list.innerHTML='';
+    state.mvd.forEach(function(item, idx){
+      var checked = !!e.mvdChecks[idx];
+      var row = document.createElement('div');
+      row.className='mvd-item';
+      row.innerHTML = '<div class="mvd-check'+(checked?' on':'')+'">'+(checked?'&#10003;':'')+'</div><div>'+item+'</div>';
+      row.addEventListener('click', function(){ e.mvdChecks[idx] = !e.mvdChecks[idx]; saveState(); renderAll(); });
+      list.appendChild(row);
+    });
+    var allDone = state.mvd.every(function(_, idx){ return !!e.mvdChecks[idx]; });
+    document.getElementById('mvd-status').textContent = allDone
+      ? 'Day protected — minimum viable day complete, no matter what else happened.'
+      : (Object.keys(e.mvdChecks).length>0 ? 'Not fully protected yet — finish the remaining item(s).' : '');
+  }
+  function mvdComplete(e){ return state.mvd.every(function(_, idx){ return !!e.mvdChecks[idx]; }); }
+
+  // ---------- STRATEGY FREEZE ----------
+  function daysBetween(a,b){ return Math.floor((b-a)/86400000); }
+  function renderStrategy(){
+    var s = state.strategy;
+    if(s){
+      var start = new Date(s.startDate);
+      var elapsed = daysBetween(start, today);
+      var left = Math.max(0, s.freezeDays - elapsed);
+      document.getElementById('strategy-active').style.display='block';
+      document.getElementById('strategy-setup').style.display='none';
+      document.getElementById('strategy-text-display').textContent = '"'+s.text+'"';
+      document.getElementById('strategy-days-left').textContent = left;
+      document.getElementById('strategy-change').textContent = left>0 ? 'Change anyway' : 'Set new strategy';
+    } else {
+      document.getElementById('strategy-active').style.display='none';
+      document.getElementById('strategy-setup').style.display='block';
+    }
+  }
+  document.getElementById('strategy-save').addEventListener('click', function(){
+    var text = document.getElementById('strategy-input').value.trim();
+    if(!text){ toast('Describe your current approach first.'); return; }
+    state.strategy = { text:text, freezeDays: parseInt(document.getElementById('strategy-days').value,10), startDate: fmtKey(today) };
+    saveState(); document.getElementById('strategy-input').value='';
+    toast('Strategy frozen. Give it time to work.'); renderStrategy();
+  });
+  document.getElementById('strategy-change').addEventListener('click', function(){
+    var s = state.strategy;
+    var start = new Date(s.startDate);
+    var elapsed = daysBetween(start, today);
+    var left = Math.max(0, s.freezeDays - elapsed);
+    if(left>0){
+      var ok = confirm('You are still '+left+' day(s) into your freeze. "'+s.text+'" hasn\'t had full time to work yet. Change anyway?');
+      if(!ok) return;
+    }
+    state.strategy = null; saveState(); renderStrategy();
+  });
+
+  // ---------- SPARKLINE (14-day execution score) ----------
+  function computeDayScore(e){
+    if(!e) return null;
+    var officeEndMinutes = minutesOf('16:00');
+    var career = e.routineStatus && e.routineStatus.office==='completed' ? 100 : 0;
+    var bizVals = [e.habits.calls/TARGETS.calls, e.habits.followups/TARGETS.followups, e.habits.sales/TARGETS.sales];
+    var business = Math.round(Math.min(1, bizVals.reduce(function(a,b){return a+Math.min(1,b);},0)/3)*100);
+    var content = Math.round(((e.habits.shot?1:0)+(e.habits.posted?1:0))/2*100);
+    var healthVals = [e.habits.meditation/TARGETS.meditation, e.habits.steps/TARGETS.steps, e.habits.water/TARGETS.water];
+    var health = Math.round(Math.min(1, healthVals.reduce(function(a,b){return a+Math.min(1,b);},0)/3)*100);
+    var learning = Math.round(Math.min(1, e.habits.learnhrs/TARGETS.learnhrs)*100);
+    var cats = [career, business, content, health, learning];
+    return Math.round(cats.reduce(function(a,b){return a+b;},0)/cats.length);
+  }
+  function renderSparkline(){
+    var el = document.getElementById('score-sparkline'); el.innerHTML='';
+    for(var i=13;i>=0;i--){
+      var d = new Date(today); d.setDate(d.getDate()-i);
+      var en = state.entries[fmtKey(d)];
+      var score = en ? computeDayScore(en) : 0;
+      var bar = document.createElement('div');
+      bar.className = 'spark-bar'+(score>=80?' hi':(score>=40?' mid':''));
+      bar.style.height = Math.max(3, score*0.56)+'px';
+      bar.title = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+': '+score;
+      el.appendChild(bar);
+    }
+  }
+
+  // ---------- WEEKLY / MONTHLY INSIGHTS ----------
+  function keysInRange(startDate, endDate){
+    var keys=[]; var d=new Date(startDate);
+    while(d<=endDate){ keys.push(fmtKey(d)); d.setDate(d.getDate()+1); }
+    return keys;
+  }
+  document.getElementById('qa-weekly').addEventListener('click', function(){
+    var start = new Date(today); start.setDate(start.getDate()-6);
+    var keys = keysInRange(start, today);
+    var entries = keys.map(function(k){ return state.entries[k]; }).filter(Boolean);
+
+    var totals = {calls:0,followups:0,sales:0,income:0,logged:entries.length};
+    var contentDays=0, healthDays=0, distractionTotal=0, mvdDays=0;
+    var distractionReasons = {};
+    entries.forEach(function(en){
+      totals.calls+=en.habits.calls||0; totals.followups+=en.habits.followups||0; totals.sales+=en.habits.sales||0;
+      if(en.habits.shot||en.habits.posted) contentDays++;
+      if((en.habits.steps||0)>=TARGETS.steps && (en.habits.water||0)>=TARGETS.water) healthDays++;
+      (en.distractions||[]).forEach(function(dd){ distractionReasons[dd.reason]=(distractionReasons[dd.reason]||0)+1; distractionTotal++; });
+      if(mvdComplete(en)) mvdDays++;
+    });
+
+    var avgScore = entries.length ? Math.round(entries.reduce(function(a,en){return a+computeDayScore(en);},0)/entries.length) : 0;
+    var topDistraction = Object.keys(distractionReasons).sort(function(a,b){return distractionReasons[b]-distractionReasons[a];})[0];
+
+    document.getElementById('weekly-focus-line').textContent = state.goals.week
+      ? 'Your stated focus this week: "'+state.goals.week+'". '+(avgScore>=70?'You backed it up.':'Protect this before anything new next week.')
+      : (avgScore>=70 ? 'Consistency was the story this week — keep the system running as-is.' : 'This week needs one fix more than a new plan — see below.');
+
+    document.getElementById('weekly-working').textContent = contentDays>=5 ? 'Content consistency — shot or posted on '+contentDays+' of '+entries.length+' days.'
+      : (healthDays>=5 ? 'Health — steps and water on target '+healthDays+' of '+entries.length+' days.'
+      : (mvdDays>=5 ? 'Minimum Viable Day protected on '+mvdDays+' of '+entries.length+' days.'
+      : (entries.length? 'You showed up and logged '+entries.length+' of the last 7 days.' : 'Not enough data yet — log a few more days.')));
+
+    document.getElementById('weekly-blocker').textContent = topDistraction ? '"'+topDistraction+'" pulled your attention '+distractionReasons[topDistraction]+'x this week.'
+      : (totals.calls < TARGETS.calls*entries.length*0.7 ? 'Calls are below target most days — that\'s the bottleneck.' : 'Nothing glaring — mostly consistency to protect now.');
+
+    document.getElementById('weekly-improvement').textContent = topDistraction ? 'Log "'+topDistraction+'" the moment it happens instead of after — awareness alone cuts it.'
+      : (contentDays<4 ? 'Get one content shoot done in the first half of the week, not the last day.' : 'Pick the single lowest number above and protect it daily.');
+
+    var numsEl = document.getElementById('weekly-numbers'); numsEl.innerHTML='';
+    [['Avg score', avgScore], ['Calls', totals.calls], ['Sales', totals.sales]].forEach(function(pair){
+      var d = document.createElement('div');
+      d.innerHTML = '<div class="tiny">'+pair[0]+'</div><div style="font-family:monospace;font-weight:800;font-size:16px;">'+pair[1]+'</div>';
+      numsEl.appendChild(d);
+    });
+    openOverlay('overlay-weekly');
+  });
+
+  document.getElementById('qa-monthly').addEventListener('click', function(){
+    var start = new Date(today.getFullYear(), today.getMonth(), 1);
+    var keys = keysInRange(start, today);
+    var entries = keys.map(function(k){ return state.entries[k]; }).filter(Boolean);
+
+    var topics = {}; var contentPosts=0, ideasCount=0, totalSales=0;
+    entries.forEach(function(en){
+      if(en.habits.learnhrs>0 && en.review && en.review.lesson) topics[en.review.lesson]=true;
+      if(en.habits.posted) contentPosts++;
+      ideasCount += (en.ideas||[]).length;
+      totalSales += en.habits.sales||0;
+    });
+    var lessons = Object.keys(topics);
+
+    var half = Math.floor(entries.length/2);
+    var firstHalf = entries.slice(0, half), secondHalf = entries.slice(half);
+    var avg = function(arr){ return arr.length? Math.round(arr.reduce(function(a,en){return a+computeDayScore(en);},0)/arr.length) : 0; };
+    var firstAvg = avg(firstHalf), secondAvg = avg(secondHalf);
+
+    document.getElementById('month-learned').textContent = lessons.length
+      ? lessons.slice(0,3).join(' · ') : 'No lessons logged yet this month — your Daily Review captures these.';
+    document.getElementById('month-built').textContent = contentPosts+' pieces of content posted, '+ideasCount+' ideas parked, '+totalSales+' sales closed this month.';
+    document.getElementById('month-improved').textContent = entries.length>=6
+      ? (secondAvg>=firstAvg ? 'Execution trended up — '+firstAvg+'% early month to '+secondAvg+'% recently.' : 'Execution dipped from '+firstAvg+'% to '+secondAvg+'% — worth naming why in your next review.')
+      : 'Not enough days logged yet to see a trend.';
+    document.getElementById('month-focus').textContent = state.goals.month
+      ? 'Carry forward: "'+state.goals.month+'" if unfinished, or set next month\'s target in Goal Hierarchy.'
+      : 'Set next month\'s target in the Goal Hierarchy card so this section can track it.';
+
+    var numsEl = document.getElementById('month-numbers'); numsEl.innerHTML='';
+    [['Days logged', entries.length], ['Sales', totalSales], ['Avg score', avg(entries)]].forEach(function(pair){
+      var d = document.createElement('div');
+      d.innerHTML = '<div class="tiny">'+pair[0]+'</div><div style="font-family:monospace;font-weight:800;font-size:16px;">'+pair[1]+'</div>';
+      numsEl.appendChild(d);
+    });
+    openOverlay('overlay-monthly');
+  });
+
+  // ---------- LOW ENERGY / LEADS / CONTENT / REPORTING ----------
+  function renderLowEnergy(){var e=entry(),on=!!e.lowEnergy;document.getElementById('low-energy-toggle').textContent=on?'Return to normal':'Activate';document.getElementById('low-energy-copy').textContent=on?'Minimums active: 10m meditation/exercise, 5K steps, 30m affiliate, one content action, 5 pages, review.':'Use minimum targets to protect consistency.';}
+  document.getElementById('low-energy-toggle').addEventListener('click',function(){var e=entry();e.lowEnergy=!e.lowEnergy;saveState();renderAll();toast(e.lowEnergy?'Low Energy Day active. Keep the minimums.':'Normal targets restored.');});
+  function newId(prefix){return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);}
+  function leadDue(l){return l.nextFollowup&&l.nextFollowup<=getTodayKey()&&!['Closed','Lost','Not Interested'].includes(l.status);}
+  function renderLeads(){
+    var leads=state.leads, todayKey=getTodayKey(), newToday=leads.filter(function(l){return l.createdDate===todayKey;}).length, due=leads.filter(leadDue).length, conversations=leads.filter(function(l){return l.status==='Conversation';}).length, closings=leads.filter(function(l){return l.status==='Closed';}).length;
+    var stats=[['New',newToday],['Due',due],['Calls',entry().habits.calls],['Convos',conversations],['Closed',closings]], box=document.getElementById('lead-stats');box.innerHTML='';stats.forEach(function(x){var d=document.createElement('div');d.innerHTML='<div class="tiny">'+x[0]+'</div><div class="habit-value">'+x[1]+'</div>';box.appendChild(d);});
+    var list=document.getElementById('lead-list');list.innerHTML=''; if(!leads.length){list.innerHTML='<div class="empty-state">No leads yet. Add the next real conversation, not a complex CRM.</div>';return;}
+    leads.slice().sort(function(a,b){return (leadDue(b)?1:0)-(leadDue(a)?1:0);}).forEach(function(l){var r=document.createElement('div');r.className='data-row';r.innerHTML='<div><strong></strong><div class="data-meta"></div></div><div class="status"></div>';r.querySelector('strong').textContent=l.name||'Unnamed lead';r.querySelector('.data-meta').textContent=(l.source||'No source')+(l.nextFollowup?' · Follow-up '+l.nextFollowup:'');var s=r.querySelector('.status');s.textContent=l.status||'New';s.classList.add(leadDue(l)?'missed':'');var edit=document.createElement('button');edit.type='button';edit.className='mini-btn';edit.textContent='Edit';edit.addEventListener('click',function(){openLead(l);});r.appendChild(edit);list.appendChild(r);});
+  }
+  function openLead(l){l=l||{};document.getElementById('lead-id').value=l.id||'';document.getElementById('lead-name').value=l.name||'';document.getElementById('lead-source').value=l.source||'';document.getElementById('lead-status').value=l.status||'New';document.getElementById('lead-contact').value=l.lastContact||'';document.getElementById('lead-followup').value=l.nextFollowup||'';document.getElementById('lead-notes').value=l.notes||'';document.getElementById('lead-delete').style.display=l.id?'inline-block':'none';openOverlay('overlay-lead');}
+  document.getElementById('lead-add').addEventListener('click',function(){openLead();});
+  document.getElementById('lead-save').addEventListener('click',function(){var name=document.getElementById('lead-name').value.trim();if(!name){toast('Lead name is required.');return;}var id=document.getElementById('lead-id').value, lead={id:id||newId('lead'),name:name,source:document.getElementById('lead-source').value.trim(),status:document.getElementById('lead-status').value,lastContact:document.getElementById('lead-contact').value,nextFollowup:document.getElementById('lead-followup').value,notes:document.getElementById('lead-notes').value.trim(),createdDate:getTodayKey()};var old=state.leads.findIndex(function(x){return x.id===id;});if(old>=0){lead.createdDate=state.leads[old].createdDate;state.leads[old]=lead;}else state.leads.push(lead);saveState();closeOverlay('overlay-lead');renderLeads();toast('Lead saved.');});
+  document.getElementById('lead-delete').addEventListener('click',function(){var id=document.getElementById('lead-id').value;if(id&&confirm('Delete this lead?')){state.leads=state.leads.filter(function(x){return x.id!==id;});saveState();closeOverlay('overlay-lead');renderLeads();}});
+  function renderContent(){var list=document.getElementById('content-list');list.innerHTML='';if(!state.content.length){list.innerHTML='<div class="empty-state">No content items yet. Add one useful piece for either stream.</div>';return;}state.content.slice().reverse().forEach(function(c){var r=document.createElement('div');r.className='data-row';r.innerHTML='<div><strong></strong><div class="data-meta"></div></div><div class="status"></div>';r.querySelector('strong').textContent=c.topic||'Untitled';r.querySelector('.data-meta').textContent=(c.stream||'')+' · '+(c.platform||'')+' · '+(c.format||'');r.querySelector('.status').textContent=c.status||'Idea';var edit=document.createElement('button');edit.type='button';edit.className='mini-btn';edit.textContent='Edit';edit.addEventListener('click',function(){openContent(c);});r.appendChild(edit);list.appendChild(r);});}
+  function openContent(c){c=c||{};document.getElementById('content-id').value=c.id||'';document.getElementById('content-topic').value=c.topic||'';document.getElementById('content-stream').value=c.stream||'Zaman Sir / Affiliate / Digital Entrepreneurship';document.getElementById('content-platform').value=c.platform||'';document.getElementById('content-format').value=c.format||'';document.getElementById('content-status').value=c.status||'Idea';document.getElementById('content-delete').style.display=c.id?'inline-block':'none';openOverlay('overlay-content');}
+  document.getElementById('content-add').addEventListener('click',function(){openContent();});
+  document.getElementById('content-save').addEventListener('click',function(){var topic=document.getElementById('content-topic').value.trim();if(!topic){toast('Content topic is required.');return;}var id=document.getElementById('content-id').value,c={id:id||newId('content'),topic:topic,stream:document.getElementById('content-stream').value,platform:document.getElementById('content-platform').value.trim(),format:document.getElementById('content-format').value.trim(),status:document.getElementById('content-status').value,createdDate:getTodayKey()};var old=state.content.findIndex(function(x){return x.id===id;});if(old>=0){c.createdDate=state.content[old].createdDate;state.content[old]=c;}else state.content.push(c);saveState();closeOverlay('overlay-content');renderContent();toast('Content saved.');});
+  document.getElementById('content-delete').addEventListener('click',function(){var id=document.getElementById('content-id').value;if(id&&confirm('Delete this content item?')){state.content=state.content.filter(function(x){return x.id!==id;});saveState();closeOverlay('overlay-content');renderContent();}});
+  function reportFor(key){var e=normalizeEntry(state.entries[key]||blankEntry()), leads=state.leads||[], content=state.content||[], conversation=leads.filter(function(l){return l.status==='Conversation';}).length, closed=leads.filter(function(l){return l.status==='Closed';}).length;return {date:key,name:'Kunal',referenceLeads:leads.filter(function(l){return l.createdDate===key;}).length,totalCalls:e.habits.calls,callsReceived:0,whatsApp:leads.filter(function(l){return l.source==='WhatsApp'&&l.createdDate===key;}).length,followUp:e.habits.followups,closing:closed,contentCreated:content.filter(function(c){return c.createdDate===key&&(c.status==='Published'||c.status==='Ready'||c.status==='Recorded');}).length,steps:e.habits.steps,meditation:e.habits.meditation,exercise:e.habits.exercise,reading:e.habits.reading,conversations:conversation,executionScore:computeDayScore(e)};}
+  function showReport(key){var r=reportFor(key),body=document.getElementById('report-body');body.innerHTML='';Object.keys(r).forEach(function(k){var d=document.createElement('div');d.className='data-row';d.innerHTML='<strong></strong><span></span>';d.querySelector('strong').textContent=k.replace(/([A-Z])/g,' $1').replace(/^./,function(x){return x.toUpperCase();});d.querySelector('span').textContent=r[k];body.appendChild(d);});openOverlay('overlay-report');}
+  document.getElementById('report-today').addEventListener('click',function(){showReport(getTodayKey());});
+  document.getElementById('report-history').addEventListener('click',function(){var keys=Object.keys(state.entries).sort().reverse();var body=document.getElementById('report-body');body.innerHTML='';if(!keys.length)body.textContent='No reports yet.';keys.forEach(function(k){var b=document.createElement('button');b.className='btn-dark btn-block';b.type='button';b.style.marginBottom='8px';b.textContent=k;b.addEventListener('click',function(){showReport(k);});body.appendChild(b);});openOverlay('overlay-report');});
+  function downloadJSON(data,name){var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
+  document.getElementById('report-export').addEventListener('click',function(){downloadJSON(reportFor(getTodayKey()),'kunal-daily-report-'+getTodayKey()+'.json');});
+  // ---------- MASTER RENDER ----------
+  function renderAll(){
+    today=getToday();
+    renderHero(); renderPriority(); renderThought(); renderMode();
+    renderRoutine(); renderHabits(); renderScore(); renderIdeas(); renderDistractions();
+    renderGoals(); renderIdentity(); renderMVD(); renderStrategy(); renderSparkline(); renderLowEnergy(); renderLeads(); renderContent(); renderNotice();
+  }
+
+  state = loadState();
+  Object.keys(state.entries).forEach(function(k){var draft=state.entries[k].focusDraft;if(draft&&draft.status==='running'){draft.status='paused';}});
+  saveState();
+  renderAll();
+  setInterval(function(){ renderAll(); }, 30000);
+})();
+</script>
+</body>
+</html>
