@@ -127,7 +127,8 @@
   .thought-text{ font-size:15px; color:var(--off-white); line-height:1.6; font-style:italic; }
   .coach-note{ font-size:13px; color:var(--gold-light); margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
   .notice{display:none; background:#33290d; border:1px solid var(--gold-dark); color:var(--gold-light); border-radius:10px; padding:12px; margin-bottom:14px; font-size:13px; line-height:1.45;}
-  .notice.show{display:block}.notice button{margin-top:9px}.status{font-size:10px; font-weight:800; letter-spacing:.7px; color:var(--grey); text-transform:uppercase}.status.completed{color:var(--green)}.status.missed{color:var(--red)}.status.active{color:var(--gold-light)}
+  .notice.show{display:block}.notice button{margin-top:9px}.status{font-size:10px; font-weight:800; letter-spacing:.7px; color:var(--grey); text-transform:uppercase}.status.completed{color:var(--green)}.status.missed{color:var(--red)}.status.active{color:var(--gold-light)}.status.skipped,.status.not_applicable{color:var(--gold-muted)}.day-banner{display:none;margin:0 0 14px;padding:10px 12px;border:1px solid var(--gold-dark);border-radius:9px;color:var(--gold-light);font-size:12px;font-weight:700}.day-banner.show{display:block}
+  #day-type-card select{flex:1;min-width:0;width:auto}#work-today{flex-shrink:0}
   .timeline-actions{margin-left:auto;display:flex;gap:5px;align-items:center}.mini-btn{background:var(--surface-2);color:var(--off-white);border:1px solid var(--line);padding:4px 7px;border-radius:6px;font-size:10px}.mini-btn:focus,.chip:focus,button:focus,input:focus,textarea:focus,select:focus{outline:2px solid var(--gold-light);outline-offset:2px}
   .chip{font-family:var(--font)}.tool-summary{cursor:pointer;list-style:none}.tool-summary::-webkit-details-marker{display:none}.tool-summary:after{content:'Show';float:right;color:var(--grey-dim);font-size:11px}.secondary-tools[open] .tool-summary:after{content:'Hide'}
   .data-row{display:grid;grid-template-columns:1.1fr .9fr .9fr auto;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px}.data-row:last-child{border-bottom:0}.data-meta{font-size:10px;color:var(--grey-dim);margin-top:2px}.compact-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.compact-form .wide{grid-column:1/-1}.section-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -143,6 +144,13 @@
   <div id="hero-greet" class="hero-greet">Good Morning, Kunal</div>
   <div id="hero-date" class="hero-date">--</div>
   <div id="hero-sub" class="hero-sub">--</div>
+  <div class="day-banner" id="day-type-banner" role="status"></div>
+
+  <div class="card" id="day-type-card">
+    <div class="eyebrow">Today — Day Type</div>
+    <div class="row"><select id="day-type" aria-label="Day type"><option value="normal">Normal Day</option><option value="office_off">Office Day Off</option><option value="leave">Personal Leave</option><option value="weekend">Weekend</option><option value="holiday">Holiday</option><option value="recovery">Recovery Day</option><option value="custom">Custom</option></select><button class="btn-outline" id="work-today" type="button" style="display:none">Work today</button></div>
+    <div class="tiny" id="day-type-note" style="margin-top:8px"></div>
+  </div>
 
   <!-- GOAL HIERARCHY -->
   <div class="card">
@@ -479,7 +487,7 @@
 
 <script>
 (function(){
-  var STORAGE_KEY = 'kdf-state-v1', SCHEMA_VERSION = 2;
+  var STORAGE_KEY = 'kdf-state-v1', SCHEMA_VERSION = 3;
   var TARGETS = { calls:55, followups:20, sales:1, steps:10000, water:3, learnhrs:0.5, meditation:30, exercise:15, reading:5, affiliateMins:120 };
 
   var ROUTINE = [
@@ -509,17 +517,19 @@
     e.priority = typeof e.priority==='string'?e.priority:''; e.priorityDone = ['yes','partial','no'].indexOf(e.priorityDone)>=0?e.priorityDone:null;
     e.routineChecks = e.routineChecks && typeof e.routineChecks==='object'?e.routineChecks:{};
     e.routineStatus = e.routineStatus && typeof e.routineStatus==='object'?e.routineStatus:{};
+    var validStatuses=['upcoming','active','completed','missed','skipped','not_applicable']; Object.keys(e.routineStatus).forEach(function(k){if(validStatuses.indexOf(e.routineStatus[k])<0)delete e.routineStatus[k];});
     Object.keys(e.routineChecks).forEach(function(k){ if(e.routineChecks[k] && !e.routineStatus[k]) e.routineStatus[k]='completed'; });
     e.habits = e.habits && typeof e.habits==='object'?e.habits:{};
     ['meditation','steps','water','sleep','learnhrs','calls','followups','sales','exercise','reading','affiliateMins'].forEach(function(k){ e.habits[k]=Math.max(0,Number(e.habits[k])||0); });
     e.habits.shot=!!e.habits.shot; e.habits.posted=!!e.habits.posted;
     e.ideas=Array.isArray(e.ideas)?e.ideas:[]; e.distractions=Array.isArray(e.distractions)?e.distractions:[]; e.focusSessions=Array.isArray(e.focusSessions)?e.focusSessions:[];
+    e.dayType=['normal','office_off','leave','weekend','holiday','recovery','custom'].indexOf(e.dayType)>=0?e.dayType:'normal';
     e.mvdChecks=e.mvdChecks && typeof e.mvdChecks==='object'?e.mvdChecks:{}; return e;
   }
   function normalizeState(s){
     if(!s || typeof s!=='object' || Array.isArray(s)) throw new Error('Backup is not a valid Kunal Daily Focus state.');
     var n=emptyState(); n.entries=s.entries && typeof s.entries==='object'&&!Array.isArray(s.entries)?s.entries:{};
-    Object.keys(n.entries).forEach(function(k){ n.entries[k]=normalizeEntry(n.entries[k]); });
+    Object.keys(n.entries).forEach(function(k){ var hadType=n.entries[k]&&n.entries[k].dayType; n.entries[k]=normalizeEntry(n.entries[k]); if(!hadType){var day=new Date(k+'T00:00:00');if(day.getDay()===0||day.getDay()===6)n.entries[k].dayType='weekend';} });
     n.goals=s.goals&&typeof s.goals==='object'?{ninety:String(s.goals.ninety||''),month:String(s.goals.month||''),week:String(s.goals.week||'')}:n.goals;
     n.identity=typeof s.identity==='string'?s.identity:''; n.strategy=s.strategy&&typeof s.strategy==='object'?s.strategy:null; n.mvd=Array.isArray(s.mvd)&&s.mvd.length?s.mvd.map(String):n.mvd;
     n.leads=Array.isArray(s.leads)?s.leads.filter(function(x){return x&&typeof x==='object';}):[]; n.content=Array.isArray(s.content)?s.content.filter(function(x){return x&&typeof x==='object';}):[]; return n;
@@ -534,12 +544,13 @@
   function saveState(){ try{ state.schemaVersion=SCHEMA_VERSION; localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); return true; }catch(e){ recoveryMessage='Your latest change could not be saved. Download a backup and check browser storage.'; renderNotice(); return false; } }
   function renderNotice(){ var el=document.getElementById('data-notice'); if(!recoveryMessage){el.classList.remove('show');return;} el.innerHTML=''; var text=document.createElement('div'); text.textContent=recoveryMessage; el.appendChild(text); var b=document.createElement('button'); b.className='btn-outline'; b.type='button'; b.textContent='Open data recovery'; b.addEventListener('click',function(){openOverlay('overlay-restore');}); el.appendChild(b); el.classList.add('show'); }
 
+  function defaultDayType(d){return d.getDay()===0||d.getDay()===6?'weekend':'normal';}
   function blankEntry(){
     return {
       priority:'', priorityDone:null,
       routineChecks:{},
       routineStatus:{}, habits:{ meditation:0, steps:0, water:0, sleep:0, learnhrs:0, calls:0, followups:0, sales:0, exercise:0, reading:0, affiliateMins:0, shot:false, posted:false },
-      ideas:[], distractions:[], focus:null, focusSessions:[], focusDraft:null, review:null, mvdChecks:{}, lowEnergy:false
+      ideas:[], distractions:[], focus:null, focusSessions:[], focusDraft:null, review:null, mvdChecks:{}, lowEnergy:false, dayType:defaultDayType(getToday())
     };
   }
   function getToday(){ return new Date(); }
@@ -547,6 +558,13 @@
   function getTodayKey(){ return fmtKey(getToday()); }
   function entry(){ var key=getTodayKey(); if(!state.entries[key]) state.entries[key]=blankEntry(); return state.entries[key]=normalizeEntry(state.entries[key]); }
   function entryFor(key){ return state.entries[key]; }
+  function isOfficeOff(e){return ['office_off','leave','weekend','holiday'].indexOf(e.dayType)>=0;}
+  function routineStatusFor(e,b,isActive,isPast){
+    if(e.routineStatus[b.id]) return e.routineStatus[b.id];
+    if(b.id==='office'&&isOfficeOff(e)) return 'not_applicable';
+    return isActive?'active':(isPast?'missed':'upcoming');
+  }
+  function statusLabel(status){return ({upcoming:'○ UPCOMING',active:'● ACTIVE',completed:'✓ COMPLETED',missed:'× MISSED',skipped:'→ SKIPPED',not_applicable:'— NOT APPLICABLE'})[status]||status;}
 
   function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(function(){ t.style.display='none'; },2200); }
 
@@ -577,9 +595,9 @@
   }
   function computeProgress(e){
     var now = getToday(), mins=now.getHours()*60+now.getMinutes();
-    var eligible=ROUTINE.filter(function(b){return minutesOf(b.start)<=mins && minutesOf(b.end)>minutesOf(b.start);});
-    var routineDone=eligible.filter(function(b){return e.routineStatus[b.id]==='completed';}).length;
-    var routineRatio = eligible.length? routineDone/eligible.length : 0;
+    var applicable=ROUTINE.filter(function(b){var s=minutesOf(b.start),en=minutesOf(b.end);return en>s&&routineStatusFor(e,b,mins>=s&&mins<en,mins>=en)!=='not_applicable';});
+    var routineDone=applicable.filter(function(b){return routineStatusFor(e,b,false,false)==='completed';}).length;
+    var routineRatio = applicable.length? routineDone/applicable.length : 0;
     var habitRatio = habitHitRatio(e);
     var priorityRatio = e.priorityDone==='yes'?1:(e.priorityDone==='partial'?0.5:0);
     var pct = Math.round((routineRatio*0.35 + habitRatio*0.35 + priorityRatio*0.30)*100);
@@ -607,6 +625,9 @@
   function computeThought(e){
     var recentKeys = last7Keys();
     var recentEntries = recentKeys.map(function(k){ return state.entries[k]; }).filter(Boolean);
+
+    if(e.dayType==='recovery') return {text:'Aaj recovery day hai. Output chase mat karo — minimums protect karo aur body ko reset do.',coach:'Meditation, movement, one small action, then rest without guilt.'};
+    if(isOfficeOff(e)) return {text:'Aaj office off hai. Is extra time ko overload mat banao — sirf ek meaningful priority complete karo.',coach:'Office required nahi hai; health, business, content ya learning mein ek intentional win choose karo.'};
 
     if(e.priority && e.priorityDone!=='yes'){
       return { text:'Aaj ka sirf ek kaam hai: "'+e.priority+'". Baaki sab shaam ke baad sochna.', coach:'Protect the block for "'+e.priority+'" before anything else opens.' };
@@ -641,17 +662,19 @@
 
   // ---------- CURRENT MODE ----------
   function currentBlock(){
+    var e=entry();
     var mins = today.getHours()*60+today.getMinutes();
     for(var i=0;i<ROUTINE.length;i++){
       var b = ROUTINE[i];
       var s = minutesOf(b.start), en = minutesOf(b.end);
-      if(en>s && mins>=s && mins<en) return b;
+      if(en>s && mins>=s && mins<en && routineStatusFor(e,b,true,false)!=='not_applicable') return b;
     }
     return null;
   }
   function renderMode(){
     var b = currentBlock();
-    if(!b){ document.getElementById('mode-lane').textContent='LIFE'; document.getElementById('mode-time').textContent='Unscheduled time'; document.getElementById('mode-task').textContent='Free block — choose deliberately.'; return; }
+    var e=entry(),mins=today.getHours()*60+today.getMinutes(), office=ROUTINE.find(function(x){return x.id==='office';});
+    if(!b){ if(office&&mins>=minutesOf(office.start)&&mins<minutesOf(office.end)&&routineStatusFor(e,office,true,false)==='not_applicable'){document.getElementById('mode-lane').textContent='DAY OFF';document.getElementById('mode-time').textContent='Office is not required today';document.getElementById('mode-task').textContent='Choose one personal priority deliberately.';}else{document.getElementById('mode-lane').textContent='LIFE'; document.getElementById('mode-time').textContent='Unscheduled time'; document.getElementById('mode-task').textContent='Free block — choose deliberately.';} return; }
     document.getElementById('mode-lane').textContent = b.lane;
     document.getElementById('mode-time').textContent = b.start+' – '+b.end;
     document.getElementById('mode-task').textContent = b.label;
@@ -666,17 +689,18 @@
       var s = minutesOf(b.start), en = minutesOf(b.end);
       var isActive = en>s && mins>=s && mins<en;
       var isPast = en>s && mins>=en;
-      var status = e.routineStatus[b.id] || (isActive?'active':(isPast?'missed':'upcoming'));
+      var status = routineStatusFor(e,b,isActive,isPast);
       var completed = status==='completed';
       var row = document.createElement('div');
       row.className = 'timeline-item '+status;
-      row.innerHTML = '<div class="timeline-mark">'+(completed?'&#10003;':(status==='missed'?'&#8212;':(isActive?'&#9679;':'&#9675;')))+'</div>'+
+      row.innerHTML = '<div class="timeline-mark">'+(completed?'&#10003;':(status==='missed'?'&#10005;':(status==='skipped'?'&#8594;':(status==='not_applicable'?'&#8212;':(isActive?'&#9679;':'&#9675;')))))+'</div>'+
         '<div class="timeline-time">'+b.start+'</div>'+
-        '<div class="timeline-label">'+b.label+'<div class="status '+status+'">'+status+'</div></div>';
+        '<div class="timeline-label">'+b.label+'<div class="status '+status+'">'+statusLabel(status)+'</div></div>';
       var actions=document.createElement('div'); actions.className='timeline-actions';
       var complete=document.createElement('button'); complete.type='button'; complete.className='mini-btn'; complete.textContent=completed?'Undo':'Complete';
       complete.addEventListener('click',function(){ e.routineStatus[b.id]=completed?(isPast?'missed':(isActive?'active':'upcoming')):'completed'; e.routineChecks[b.id]=!completed; saveState(); renderAll(); }); actions.appendChild(complete);
-      if(!completed && status!=='missed'){ var miss=document.createElement('button'); miss.type='button'; miss.className='mini-btn'; miss.textContent='Miss'; miss.addEventListener('click',function(){e.routineStatus[b.id]='missed'; e.routineChecks[b.id]=false; saveState();renderAll();});actions.appendChild(miss); }
+      if(!completed&&status!=='not_applicable'){var skip=document.createElement('button');skip.type='button';skip.className='mini-btn';skip.textContent='Skip';skip.addEventListener('click',function(){e.routineStatus[b.id]='skipped';e.routineChecks[b.id]=false;saveState();renderAll();});actions.appendChild(skip);}
+      if(status!=='not_applicable'){var na=document.createElement('button');na.type='button';na.className='mini-btn';na.textContent='N/A';na.addEventListener('click',function(){e.routineStatus[b.id]='not_applicable';e.routineChecks[b.id]=false;saveState();renderAll();});actions.appendChild(na);}else{var undoNa=document.createElement('button');undoNa.type='button';undoNa.className='mini-btn';undoNa.textContent=b.id==='office'&&isOfficeOff(e)?'Work today':'Make applicable';undoNa.addEventListener('click',function(){e.routineStatus[b.id]='upcoming';saveState();renderAll();});actions.appendChild(undoNa);}
       row.appendChild(actions);
       el.appendChild(row);
     });
@@ -753,7 +777,7 @@
   }
   function renderScore(){
     var e = entry();
-    var t=targetsFor(e), nowMinutes=today.getHours()*60+today.getMinutes(), officeStatus=e.routineStatus.office;
+    var t=targetsFor(e), nowMinutes=today.getHours()*60+today.getMinutes(), officeBlock=ROUTINE.find(function(b){return b.id==='office';}), officeStatus=routineStatusFor(e,officeBlock,nowMinutes>=minutesOf('07:00')&&nowMinutes<minutesOf('16:00'),nowMinutes>=minutesOf('16:00'));
     function measured(name,pct,hasData){return {name:name,pct:Math.max(0,Math.min(100,Math.round(pct))),pending:!hasData};}
     var businessData=e.habits.calls||e.habits.followups||e.habits.sales||e.habits.affiliateMins;
     var contentData=e.habits.shot||e.habits.posted||state.content.some(function(c){return c.createdDate===getTodayKey();});
@@ -761,7 +785,7 @@
     var focusData=e.focusSessions.length>0 || e.priorityDone!==null;
     var reviewData=!!e.review;
     var cats=[
-      measured('Career',officeStatus==='completed'?100:0,nowMinutes>=minutesOf('16:00')&&(officeStatus==='completed'||officeStatus==='missed')),
+      measured('Career',officeStatus==='completed'?100:0,officeStatus!=='not_applicable'&&nowMinutes>=minutesOf('16:00')&&(officeStatus==='completed'||officeStatus==='missed'||officeStatus==='skipped')),
       measured('Business',((e.habits.calls/t.calls)+(e.habits.followups/t.followups)+(e.habits.sales/t.sales)+(e.habits.affiliateMins/t.affiliateMins))*25,!!businessData),
       measured('Content',((e.habits.shot?1:0)+(e.habits.posted?1:0))*50,!!contentData),
       measured('Health',((e.habits.meditation/t.meditation)+(e.habits.steps/t.steps)+(e.habits.water/t.water)+(e.habits.exercise/t.exercise))*25,!!healthData),
@@ -921,6 +945,8 @@
       distraction: document.getElementById('rev-distraction').value.trim(),
       lesson: document.getElementById('rev-lesson').value.trim(),
       tomorrow: document.getElementById('rev-tomorrow').value.trim(),
+      dayType: e.dayType,
+      routineStatuses: Object.assign({},e.routineStatus),
       closedAt: today.toTimeString().slice(0,5)
     };
     saveState();
@@ -1053,7 +1079,7 @@
   // ---------- SPARKLINE (14-day execution score) ----------
   function computeDayScore(e){
     if(!e) return null;
-    var officeEndMinutes = minutesOf('16:00');
+    var careerApplicable=!(e.routineStatus&&e.routineStatus.office==='not_applicable');
     var career = e.routineStatus && e.routineStatus.office==='completed' ? 100 : 0;
     var bizVals = [e.habits.calls/TARGETS.calls, e.habits.followups/TARGETS.followups, e.habits.sales/TARGETS.sales];
     var business = Math.round(Math.min(1, bizVals.reduce(function(a,b){return a+Math.min(1,b);},0)/3)*100);
@@ -1061,7 +1087,7 @@
     var healthVals = [e.habits.meditation/TARGETS.meditation, e.habits.steps/TARGETS.steps, e.habits.water/TARGETS.water];
     var health = Math.round(Math.min(1, healthVals.reduce(function(a,b){return a+Math.min(1,b);},0)/3)*100);
     var learning = Math.round(Math.min(1, e.habits.learnhrs/TARGETS.learnhrs)*100);
-    var cats = [career, business, content, health, learning];
+    var cats = [business, content, health, learning]; if(careerApplicable)cats.unshift(career);
     return Math.round(cats.reduce(function(a,b){return a+b;},0)/cats.length);
   }
   function renderSparkline(){
@@ -1166,6 +1192,10 @@
   });
 
   // ---------- LOW ENERGY / LEADS / CONTENT / REPORTING ----------
+  var DAY_TYPE_LABELS={normal:'💼 NORMAL DAY',office_off:'🏖️ OFFICE DAY OFF',leave:'PERSONAL LEAVE',weekend:'WEEKEND',holiday:'🏖️ HOLIDAY',recovery:'RECOVERY DAY',custom:'CUSTOM DAY'};
+  function renderDayType(){var e=entry(),sel=document.getElementById('day-type'),banner=document.getElementById('day-type-banner'),note=document.getElementById('day-type-note'),work=document.getElementById('work-today');sel.value=e.dayType;var off=isOfficeOff(e);banner.textContent=off?DAY_TYPE_LABELS[e.dayType]+' — Office activities are not required today.':'';banner.classList.toggle('show',off);note.textContent=e.dayType==='custom'?'Choose Not Applicable only for routine blocks that do not apply today.':(off?'Office is excluded; all other activities remain applicable.':(e.dayType==='recovery'?'Keep the day light and protect the minimums.':'Normal routine is active.'));work.style.display=off?'inline-block':'none';}
+  document.getElementById('day-type').addEventListener('change',function(){var e=entry(),next=this.value,wasOff=isOfficeOff(e);e.dayType=next;if(isOfficeOff(e)){if(!e.routineStatus.office||e.routineStatus.office==='upcoming'||e.routineStatus.office==='active'||e.routineStatus.office==='missed')e.routineStatus.office='not_applicable';}else if(wasOff&&e.routineStatus.office==='not_applicable'){delete e.routineStatus.office;}if(next==='recovery')e.lowEnergy=true;saveState();renderAll();toast(DAY_TYPE_LABELS[next]+' set.');});
+  document.getElementById('work-today').addEventListener('click',function(){var e=entry();e.routineStatus.office='upcoming';saveState();renderAll();toast('Office is applicable today.');});
   function renderLowEnergy(){var e=entry(),on=!!e.lowEnergy;document.getElementById('low-energy-toggle').textContent=on?'Return to normal':'Activate';document.getElementById('low-energy-copy').textContent=on?'Minimums active: 10m meditation/exercise, 5K steps, 30m affiliate, one content action, 5 pages, review.':'Use minimum targets to protect consistency.';}
   document.getElementById('low-energy-toggle').addEventListener('click',function(){var e=entry();e.lowEnergy=!e.lowEnergy;saveState();renderAll();toast(e.lowEnergy?'Low Energy Day active. Keep the minimums.':'Normal targets restored.');});
   function newId(prefix){return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);}
@@ -1185,7 +1215,7 @@
   document.getElementById('content-add').addEventListener('click',function(){openContent();});
   document.getElementById('content-save').addEventListener('click',function(){var topic=document.getElementById('content-topic').value.trim();if(!topic){toast('Content topic is required.');return;}var id=document.getElementById('content-id').value,c={id:id||newId('content'),topic:topic,stream:document.getElementById('content-stream').value,platform:document.getElementById('content-platform').value.trim(),format:document.getElementById('content-format').value.trim(),status:document.getElementById('content-status').value,createdDate:getTodayKey()};var old=state.content.findIndex(function(x){return x.id===id;});if(old>=0){c.createdDate=state.content[old].createdDate;state.content[old]=c;}else state.content.push(c);saveState();closeOverlay('overlay-content');renderContent();toast('Content saved.');});
   document.getElementById('content-delete').addEventListener('click',function(){var id=document.getElementById('content-id').value;if(id&&confirm('Delete this content item?')){state.content=state.content.filter(function(x){return x.id!==id;});saveState();closeOverlay('overlay-content');renderContent();}});
-  function reportFor(key){var e=normalizeEntry(state.entries[key]||blankEntry()), leads=state.leads||[], content=state.content||[], conversation=leads.filter(function(l){return l.status==='Conversation';}).length, closed=leads.filter(function(l){return l.status==='Closed';}).length;return {date:key,name:'Kunal',referenceLeads:leads.filter(function(l){return l.createdDate===key;}).length,totalCalls:e.habits.calls,callsReceived:0,whatsApp:leads.filter(function(l){return l.source==='WhatsApp'&&l.createdDate===key;}).length,followUp:e.habits.followups,closing:closed,contentCreated:content.filter(function(c){return c.createdDate===key&&(c.status==='Published'||c.status==='Ready'||c.status==='Recorded');}).length,steps:e.habits.steps,meditation:e.habits.meditation,exercise:e.habits.exercise,reading:e.habits.reading,conversations:conversation,executionScore:computeDayScore(e)};}
+  function reportFor(key){var e=normalizeEntry(state.entries[key]||blankEntry()), leads=state.leads||[], content=state.content||[], conversation=leads.filter(function(l){return l.status==='Conversation';}).length, closed=leads.filter(function(l){return l.status==='Closed';}).length;return {date:key,dayType:DAY_TYPE_LABELS[e.dayType]||DAY_TYPE_LABELS.normal,name:'Kunal',referenceLeads:leads.filter(function(l){return l.createdDate===key;}).length,totalCalls:e.habits.calls,callsReceived:0,whatsApp:leads.filter(function(l){return l.source==='WhatsApp'&&l.createdDate===key;}).length,followUp:e.habits.followups,closing:closed,contentCreated:content.filter(function(c){return c.createdDate===key&&(c.status==='Published'||c.status==='Ready'||c.status==='Recorded');}).length,steps:e.habits.steps,meditation:e.habits.meditation,exercise:e.habits.exercise,reading:e.habits.reading,conversations:conversation,executionScore:computeDayScore(e)};}
   function showReport(key){var r=reportFor(key),body=document.getElementById('report-body');body.innerHTML='';Object.keys(r).forEach(function(k){var d=document.createElement('div');d.className='data-row';d.innerHTML='<strong></strong><span></span>';d.querySelector('strong').textContent=k.replace(/([A-Z])/g,' $1').replace(/^./,function(x){return x.toUpperCase();});d.querySelector('span').textContent=r[k];body.appendChild(d);});openOverlay('overlay-report');}
   document.getElementById('report-today').addEventListener('click',function(){showReport(getTodayKey());});
   document.getElementById('report-history').addEventListener('click',function(){var keys=Object.keys(state.entries).sort().reverse();var body=document.getElementById('report-body');body.innerHTML='';if(!keys.length)body.textContent='No reports yet.';keys.forEach(function(k){var b=document.createElement('button');b.className='btn-dark btn-block';b.type='button';b.style.marginBottom='8px';b.textContent=k;b.addEventListener('click',function(){showReport(k);});body.appendChild(b);});openOverlay('overlay-report');});
@@ -1196,7 +1226,7 @@
     today=getToday();
     renderHero(); renderPriority(); renderThought(); renderMode();
     renderRoutine(); renderHabits(); renderScore(); renderIdeas(); renderDistractions();
-    renderGoals(); renderIdentity(); renderMVD(); renderStrategy(); renderSparkline(); renderLowEnergy(); renderLeads(); renderContent(); renderNotice();
+    renderGoals(); renderIdentity(); renderMVD(); renderStrategy(); renderSparkline(); renderDayType(); renderLowEnergy(); renderLeads(); renderContent(); renderNotice();
   }
 
   state = loadState();
