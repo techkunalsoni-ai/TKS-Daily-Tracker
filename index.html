@@ -144,6 +144,9 @@
   <div id="hero-greet" class="hero-greet">Good Morning, Kunal</div>
   <div id="hero-date" class="hero-date">--</div>
   <div id="hero-sub" class="hero-sub">--</div>
+  <div class="card" style="padding:12px 14px; margin-bottom:14px;">
+    <div class="row"><div><div class="eyebrow" style="margin-bottom:4px;">View / edit day</div><div class="tiny" id="selected-day-note">Loading today…</div></div><input id="selected-date" type="date" aria-label="Choose a day to view or edit" style="width:auto;max-width:155px;padding:8px"></div>
+  </div>
   <div class="day-banner" id="day-type-banner" role="status"></div>
 
   <div class="card" id="day-type-card">
@@ -505,7 +508,7 @@
   ];
 
   var DEFAULT_MVD = ['10 fresh calls attempted', 'Meditation done', 'Self-review written'];
-  var state, recoveryMessage = '', focusTimerId = null, focusSecondsLeft = 0, focusOutcomeSel = null;
+  var state, recoveryMessage = '', focusTimerId = null, focusSecondsLeft = 0, focusOutcomeSel = null, selectedDateKey = fmtKey(new Date());
 
   function fmtKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   function pad(n){ return String(n).padStart(2,'0'); }
@@ -545,18 +548,21 @@
   function renderNotice(){ var el=document.getElementById('data-notice'); if(!recoveryMessage){el.classList.remove('show');return;} el.innerHTML=''; var text=document.createElement('div'); text.textContent=recoveryMessage; el.appendChild(text); var b=document.createElement('button'); b.className='btn-outline'; b.type='button'; b.textContent='Open data recovery'; b.addEventListener('click',function(){openOverlay('overlay-restore');}); el.appendChild(b); el.classList.add('show'); }
 
   function defaultDayType(d){return d.getDay()===0||d.getDay()===6?'weekend':'normal';}
-  function blankEntry(){
+  function dateForKey(key){var p=key.split('-');return new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));}
+  function getActiveDateKey(){return selectedDateKey||getTodayKey();}
+  function isViewingToday(){return getActiveDateKey()===getTodayKey();}
+  function blankEntry(key){
     return {
       priority:'', priorityDone:null,
       routineChecks:{},
       routineStatus:{}, habits:{ meditation:0, steps:0, water:0, sleep:0, learnhrs:0, calls:0, followups:0, sales:0, exercise:0, reading:0, affiliateMins:0, shot:false, posted:false },
-      ideas:[], distractions:[], focus:null, focusSessions:[], focusDraft:null, review:null, mvdChecks:{}, lowEnergy:false, dayType:defaultDayType(getToday())
+      ideas:[], distractions:[], focus:null, focusSessions:[], focusDraft:null, review:null, mvdChecks:{}, lowEnergy:false, dayType:defaultDayType(dateForKey(key||getTodayKey()))
     };
   }
   function getToday(){ return new Date(); }
   var today = getToday();
   function getTodayKey(){ return fmtKey(getToday()); }
-  function entry(){ var key=getTodayKey(); if(!state.entries[key]) state.entries[key]=blankEntry(); return state.entries[key]=normalizeEntry(state.entries[key]); }
+  function entry(){ var key=getActiveDateKey(); if(!state.entries[key]) state.entries[key]=blankEntry(key); return state.entries[key]=normalizeEntry(state.entries[key]); }
   function entryFor(key){ return state.entries[key]; }
   function isOfficeOff(e){return ['office_off','leave','weekend','holiday'].indexOf(e.dayType)>=0;}
   function routineStatusFor(e,b,isActive,isPast){
@@ -573,9 +579,12 @@
     var hr = today.getHours();
     var greet = hr<12?'Good Morning, Kunal':(hr<17?'Good Afternoon, Kunal':'Good Evening, Kunal');
     document.getElementById('hero-greet').textContent = greet;
-    document.getElementById('hero-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long', day:'numeric', month:'long'});
-    document.getElementById('hero-sub').textContent = 'Phase 1 · One day. One priority. One next action.';
+    var activeDate=dateForKey(getActiveDateKey());
+    document.getElementById('hero-date').textContent = activeDate.toLocaleDateString('en-IN',{weekday:'long', day:'numeric', month:'long'});
+    document.getElementById('hero-sub').textContent = isViewingToday()?'Phase 1 · One day. One priority. One next action.':'Historical day · update what actually happened.';
   }
+  function renderSelectedDate(){var input=document.getElementById('selected-date'),note=document.getElementById('selected-day-note');input.value=getActiveDateKey();input.max=getTodayKey();note.textContent=isViewingToday()?'Editing today.':'Editing '+dateForKey(getActiveDateKey()).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+'. Changes save to this day.';}
+  document.getElementById('selected-date').addEventListener('change',function(){if(!this.value)return;selectedDateKey=this.value;clearInterval(focusTimerId);focusTimerId=null;renderAll();});
 
   // ---------- PRIORITY / PROGRESS ----------
   function habitHitRatio(e){
@@ -594,7 +603,7 @@
     return hits/checks.length;
   }
   function computeProgress(e){
-    var now = getToday(), mins=now.getHours()*60+now.getMinutes();
+    var now = getToday(), mins=isViewingToday()?now.getHours()*60+now.getMinutes():1439;
     var applicable=ROUTINE.filter(function(b){var s=minutesOf(b.start),en=minutesOf(b.end);return en>s&&routineStatusFor(e,b,mins>=s&&mins<en,mins>=en)!=='not_applicable';});
     var routineDone=applicable.filter(function(b){return routineStatusFor(e,b,false,false)==='completed';}).length;
     var routineRatio = applicable.length? routineDone/applicable.length : 0;
@@ -619,7 +628,7 @@
   // ---------- DAILY THOUGHT ----------
   function last7Keys(){
     var keys=[];
-    for(var i=1;i<=7;i++){ var d=new Date(today); d.setDate(d.getDate()-i); keys.push(fmtKey(d)); }
+    for(var i=1;i<=7;i++){ var d=dateForKey(getActiveDateKey()); d.setDate(d.getDate()-i); keys.push(fmtKey(d)); }
     return keys;
   }
   function computeThought(e){
@@ -672,6 +681,7 @@
     return null;
   }
   function renderMode(){
+    if(!isViewingToday()){document.getElementById('mode-lane').textContent='HISTORY';document.getElementById('mode-time').textContent='Selected past day';document.getElementById('mode-task').textContent='Update the day to reflect what actually happened.';return;}
     var b = currentBlock();
     var e=entry(),mins=today.getHours()*60+today.getMinutes(), office=ROUTINE.find(function(x){return x.id==='office';});
     if(!b){ if(office&&mins>=minutesOf(office.start)&&mins<minutesOf(office.end)&&routineStatusFor(e,office,true,false)==='not_applicable'){document.getElementById('mode-lane').textContent='DAY OFF';document.getElementById('mode-time').textContent='Office is not required today';document.getElementById('mode-task').textContent='Choose one personal priority deliberately.';}else{document.getElementById('mode-lane').textContent='LIFE'; document.getElementById('mode-time').textContent='Unscheduled time'; document.getElementById('mode-task').textContent='Free block — choose deliberately.';} return; }
@@ -683,7 +693,7 @@
   // ---------- ROUTINE TIMELINE ----------
   function renderRoutine(){
     var e = entry();
-    var mins = today.getHours()*60+today.getMinutes();
+    var mins = isViewingToday()?today.getHours()*60+today.getMinutes():1439;
     var el = document.getElementById('routine-list'); el.innerHTML='';
     ROUTINE.forEach(function(b){
       var s = minutesOf(b.start), en = minutesOf(b.end);
@@ -777,10 +787,10 @@
   }
   function renderScore(){
     var e = entry();
-    var t=targetsFor(e), nowMinutes=today.getHours()*60+today.getMinutes(), officeBlock=ROUTINE.find(function(b){return b.id==='office';}), officeStatus=routineStatusFor(e,officeBlock,nowMinutes>=minutesOf('07:00')&&nowMinutes<minutesOf('16:00'),nowMinutes>=minutesOf('16:00'));
+    var t=targetsFor(e), nowMinutes=isViewingToday()?today.getHours()*60+today.getMinutes():1439, officeBlock=ROUTINE.find(function(b){return b.id==='office';}), officeStatus=routineStatusFor(e,officeBlock,nowMinutes>=minutesOf('07:00')&&nowMinutes<minutesOf('16:00'),nowMinutes>=minutesOf('16:00'));
     function measured(name,pct,hasData){return {name:name,pct:Math.max(0,Math.min(100,Math.round(pct))),pending:!hasData};}
     var businessData=e.habits.calls||e.habits.followups||e.habits.sales||e.habits.affiliateMins;
-    var contentData=e.habits.shot||e.habits.posted||state.content.some(function(c){return c.createdDate===getTodayKey();});
+    var contentData=e.habits.shot||e.habits.posted||state.content.some(function(c){return c.createdDate===getActiveDateKey();});
     var healthData=e.habits.meditation||e.habits.steps||e.habits.water||e.habits.exercise;
     var focusData=e.focusSessions.length>0 || e.priorityDone!==null;
     var reviewData=!!e.review;
@@ -1201,30 +1211,30 @@
   function newId(prefix){return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);}
   function leadDue(l){return l.nextFollowup&&l.nextFollowup<=getTodayKey()&&!['Closed','Lost','Not Interested'].includes(l.status);}
   function renderLeads(){
-    var leads=state.leads, todayKey=getTodayKey(), newToday=leads.filter(function(l){return l.createdDate===todayKey;}).length, due=leads.filter(leadDue).length, conversations=leads.filter(function(l){return l.status==='Conversation';}).length, closings=leads.filter(function(l){return l.status==='Closed';}).length;
+    var leads=state.leads, todayKey=getActiveDateKey(), newToday=leads.filter(function(l){return l.createdDate===todayKey;}).length, due=leads.filter(leadDue).length, conversations=leads.filter(function(l){return l.status==='Conversation';}).length, closings=leads.filter(function(l){return l.status==='Closed';}).length;
     var stats=[['New',newToday],['Due',due],['Calls',entry().habits.calls],['Convos',conversations],['Closed',closings]], box=document.getElementById('lead-stats');box.innerHTML='';stats.forEach(function(x){var d=document.createElement('div');d.innerHTML='<div class="tiny">'+x[0]+'</div><div class="habit-value">'+x[1]+'</div>';box.appendChild(d);});
     var list=document.getElementById('lead-list');list.innerHTML=''; if(!leads.length){list.innerHTML='<div class="empty-state">No leads yet. Add the next real conversation, not a complex CRM.</div>';return;}
     leads.slice().sort(function(a,b){return (leadDue(b)?1:0)-(leadDue(a)?1:0);}).forEach(function(l){var r=document.createElement('div');r.className='data-row';r.innerHTML='<div><strong></strong><div class="data-meta"></div></div><div class="status"></div>';r.querySelector('strong').textContent=l.name||'Unnamed lead';r.querySelector('.data-meta').textContent=(l.source||'No source')+(l.nextFollowup?' · Follow-up '+l.nextFollowup:'');var s=r.querySelector('.status');s.textContent=l.status||'New';s.classList.add(leadDue(l)?'missed':'');var edit=document.createElement('button');edit.type='button';edit.className='mini-btn';edit.textContent='Edit';edit.addEventListener('click',function(){openLead(l);});r.appendChild(edit);list.appendChild(r);});
   }
   function openLead(l){l=l||{};document.getElementById('lead-id').value=l.id||'';document.getElementById('lead-name').value=l.name||'';document.getElementById('lead-source').value=l.source||'';document.getElementById('lead-status').value=l.status||'New';document.getElementById('lead-contact').value=l.lastContact||'';document.getElementById('lead-followup').value=l.nextFollowup||'';document.getElementById('lead-notes').value=l.notes||'';document.getElementById('lead-delete').style.display=l.id?'inline-block':'none';openOverlay('overlay-lead');}
   document.getElementById('lead-add').addEventListener('click',function(){openLead();});
-  document.getElementById('lead-save').addEventListener('click',function(){var name=document.getElementById('lead-name').value.trim();if(!name){toast('Lead name is required.');return;}var id=document.getElementById('lead-id').value, lead={id:id||newId('lead'),name:name,source:document.getElementById('lead-source').value.trim(),status:document.getElementById('lead-status').value,lastContact:document.getElementById('lead-contact').value,nextFollowup:document.getElementById('lead-followup').value,notes:document.getElementById('lead-notes').value.trim(),createdDate:getTodayKey()};var old=state.leads.findIndex(function(x){return x.id===id;});if(old>=0){lead.createdDate=state.leads[old].createdDate;state.leads[old]=lead;}else state.leads.push(lead);saveState();closeOverlay('overlay-lead');renderLeads();toast('Lead saved.');});
+  document.getElementById('lead-save').addEventListener('click',function(){var name=document.getElementById('lead-name').value.trim();if(!name){toast('Lead name is required.');return;}var id=document.getElementById('lead-id').value, lead={id:id||newId('lead'),name:name,source:document.getElementById('lead-source').value.trim(),status:document.getElementById('lead-status').value,lastContact:document.getElementById('lead-contact').value,nextFollowup:document.getElementById('lead-followup').value,notes:document.getElementById('lead-notes').value.trim(),createdDate:getActiveDateKey()};var old=state.leads.findIndex(function(x){return x.id===id;});if(old>=0){lead.createdDate=state.leads[old].createdDate;state.leads[old]=lead;}else state.leads.push(lead);saveState();closeOverlay('overlay-lead');renderLeads();toast('Lead saved.');});
   document.getElementById('lead-delete').addEventListener('click',function(){var id=document.getElementById('lead-id').value;if(id&&confirm('Delete this lead?')){state.leads=state.leads.filter(function(x){return x.id!==id;});saveState();closeOverlay('overlay-lead');renderLeads();}});
   function renderContent(){var list=document.getElementById('content-list');list.innerHTML='';if(!state.content.length){list.innerHTML='<div class="empty-state">No content items yet. Add one useful piece for either stream.</div>';return;}state.content.slice().reverse().forEach(function(c){var r=document.createElement('div');r.className='data-row';r.innerHTML='<div><strong></strong><div class="data-meta"></div></div><div class="status"></div>';r.querySelector('strong').textContent=c.topic||'Untitled';r.querySelector('.data-meta').textContent=(c.stream||'')+' · '+(c.platform||'')+' · '+(c.format||'');r.querySelector('.status').textContent=c.status||'Idea';var edit=document.createElement('button');edit.type='button';edit.className='mini-btn';edit.textContent='Edit';edit.addEventListener('click',function(){openContent(c);});r.appendChild(edit);list.appendChild(r);});}
   function openContent(c){c=c||{};document.getElementById('content-id').value=c.id||'';document.getElementById('content-topic').value=c.topic||'';document.getElementById('content-stream').value=c.stream||'Zaman Sir / Affiliate / Digital Entrepreneurship';document.getElementById('content-platform').value=c.platform||'';document.getElementById('content-format').value=c.format||'';document.getElementById('content-status').value=c.status||'Idea';document.getElementById('content-delete').style.display=c.id?'inline-block':'none';openOverlay('overlay-content');}
   document.getElementById('content-add').addEventListener('click',function(){openContent();});
-  document.getElementById('content-save').addEventListener('click',function(){var topic=document.getElementById('content-topic').value.trim();if(!topic){toast('Content topic is required.');return;}var id=document.getElementById('content-id').value,c={id:id||newId('content'),topic:topic,stream:document.getElementById('content-stream').value,platform:document.getElementById('content-platform').value.trim(),format:document.getElementById('content-format').value.trim(),status:document.getElementById('content-status').value,createdDate:getTodayKey()};var old=state.content.findIndex(function(x){return x.id===id;});if(old>=0){c.createdDate=state.content[old].createdDate;state.content[old]=c;}else state.content.push(c);saveState();closeOverlay('overlay-content');renderContent();toast('Content saved.');});
+  document.getElementById('content-save').addEventListener('click',function(){var topic=document.getElementById('content-topic').value.trim();if(!topic){toast('Content topic is required.');return;}var id=document.getElementById('content-id').value,c={id:id||newId('content'),topic:topic,stream:document.getElementById('content-stream').value,platform:document.getElementById('content-platform').value.trim(),format:document.getElementById('content-format').value.trim(),status:document.getElementById('content-status').value,createdDate:getActiveDateKey()};var old=state.content.findIndex(function(x){return x.id===id;});if(old>=0){c.createdDate=state.content[old].createdDate;state.content[old]=c;}else state.content.push(c);saveState();closeOverlay('overlay-content');renderContent();toast('Content saved.');});
   document.getElementById('content-delete').addEventListener('click',function(){var id=document.getElementById('content-id').value;if(id&&confirm('Delete this content item?')){state.content=state.content.filter(function(x){return x.id!==id;});saveState();closeOverlay('overlay-content');renderContent();}});
-  function reportFor(key){var e=normalizeEntry(state.entries[key]||blankEntry()), leads=state.leads||[], content=state.content||[], conversation=leads.filter(function(l){return l.status==='Conversation';}).length, closed=leads.filter(function(l){return l.status==='Closed';}).length;return {date:key,dayType:DAY_TYPE_LABELS[e.dayType]||DAY_TYPE_LABELS.normal,name:'Kunal',referenceLeads:leads.filter(function(l){return l.createdDate===key;}).length,totalCalls:e.habits.calls,callsReceived:0,whatsApp:leads.filter(function(l){return l.source==='WhatsApp'&&l.createdDate===key;}).length,followUp:e.habits.followups,closing:closed,contentCreated:content.filter(function(c){return c.createdDate===key&&(c.status==='Published'||c.status==='Ready'||c.status==='Recorded');}).length,steps:e.habits.steps,meditation:e.habits.meditation,exercise:e.habits.exercise,reading:e.habits.reading,conversations:conversation,executionScore:computeDayScore(e)};}
+  function reportFor(key){var e=normalizeEntry(state.entries[key]||blankEntry(key)), leads=state.leads||[], content=state.content||[], conversation=leads.filter(function(l){return l.status==='Conversation';}).length, closed=leads.filter(function(l){return l.status==='Closed';}).length;return {date:key,dayType:DAY_TYPE_LABELS[e.dayType]||DAY_TYPE_LABELS.normal,name:'Kunal',referenceLeads:leads.filter(function(l){return l.createdDate===key;}).length,totalCalls:e.habits.calls,callsReceived:0,whatsApp:leads.filter(function(l){return l.source==='WhatsApp'&&l.createdDate===key;}).length,followUp:e.habits.followups,closing:closed,contentCreated:content.filter(function(c){return c.createdDate===key&&(c.status==='Published'||c.status==='Ready'||c.status==='Recorded');}).length,steps:e.habits.steps,meditation:e.habits.meditation,exercise:e.habits.exercise,reading:e.habits.reading,conversations:conversation,executionScore:computeDayScore(e)};}
   function showReport(key){var r=reportFor(key),body=document.getElementById('report-body');body.innerHTML='';Object.keys(r).forEach(function(k){var d=document.createElement('div');d.className='data-row';d.innerHTML='<strong></strong><span></span>';d.querySelector('strong').textContent=k.replace(/([A-Z])/g,' $1').replace(/^./,function(x){return x.toUpperCase();});d.querySelector('span').textContent=r[k];body.appendChild(d);});openOverlay('overlay-report');}
-  document.getElementById('report-today').addEventListener('click',function(){showReport(getTodayKey());});
+  document.getElementById('report-today').addEventListener('click',function(){showReport(getActiveDateKey());});
   document.getElementById('report-history').addEventListener('click',function(){var keys=Object.keys(state.entries).sort().reverse();var body=document.getElementById('report-body');body.innerHTML='';if(!keys.length)body.textContent='No reports yet.';keys.forEach(function(k){var b=document.createElement('button');b.className='btn-dark btn-block';b.type='button';b.style.marginBottom='8px';b.textContent=k;b.addEventListener('click',function(){showReport(k);});body.appendChild(b);});openOverlay('overlay-report');});
   function downloadJSON(data,name){var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
-  document.getElementById('report-export').addEventListener('click',function(){downloadJSON(reportFor(getTodayKey()),'kunal-daily-report-'+getTodayKey()+'.json');});
+  document.getElementById('report-export').addEventListener('click',function(){downloadJSON(reportFor(getActiveDateKey()),'kunal-daily-report-'+getActiveDateKey()+'.json');});
   // ---------- MASTER RENDER ----------
   function renderAll(){
     today=getToday();
-    renderHero(); renderPriority(); renderThought(); renderMode();
+    renderSelectedDate(); renderHero(); renderPriority(); renderThought(); renderMode();
     renderRoutine(); renderHabits(); renderScore(); renderIdeas(); renderDistractions();
     renderGoals(); renderIdentity(); renderMVD(); renderStrategy(); renderSparkline(); renderDayType(); renderLowEnergy(); renderLeads(); renderContent(); renderNotice();
   }
